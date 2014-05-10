@@ -5,6 +5,22 @@
 #include <errno.h> 
 #include <sys/mman.h>
 
+#define MIN_ALLOC 1024 /* minimum number of bytes to request */
+
+/*
+ * Some reading on unions:
+ * http://www.tutorialspoint.com/cprogramming/c_unions.htm
+ * 
+ * This is currently gibberish-code inspired by the reference impl.
+ */
+union header {
+    struct {
+        union header *nxt_hdr;
+        unsigned block_size;
+    } block;
+    long x;
+};
+
 #ifdef MMAP
 
 static void * __endHeap = 0;
@@ -14,11 +30,11 @@ void * endHeap(void)
   if(__endHeap == 0) __endHeap = sbrk(0);
   return __endHeap;
 }
+
 #endif
 
 
 void *malloc(size_t nbytes) {
-    printf("INSIDE MALLOC\n");
     return NULL;
 }
 
