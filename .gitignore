@@ -1,0 +1,3 @@
+*.o
+malloc
+.DS_Store
