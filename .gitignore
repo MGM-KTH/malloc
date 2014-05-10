@@ -1,3 +1,6 @@
 *.o
 malloc
 .DS_Store
+
+# test files
+testing/*
