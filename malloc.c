@@ -175,15 +175,6 @@ void *malloc(size_t nbytes) {
     if(best->block.size <= naligned + threshold) { /* found perfect block! */
         prev_best->block.next = best->block.next; /* unlink best */
     }else {
-        /* todo: free tail! */
-        /*fprintf(stderr, "Sending in best =  %d\n", best);
-        fprintf(stderr, "naligned = %u\n", naligned);
-        fprintf(stderr, "block size = %u\n", best->block.size);
-        best = (header *)realloc(best+1, nbytes) - 1;
-        fprintf(stderr, "Received best =  %d\n", best);
-        fprintf(stderr, "new block size = %u\n", best->block.size);*/
-
-
         best->block.size -= naligned;
         best += best->block.size;
         best->block.size = naligned;
