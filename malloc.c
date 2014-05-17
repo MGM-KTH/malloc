@@ -1,5 +1,7 @@
+#define _GNU_SOURCE
 #include <stdio.h> /* for debugging */
 #include "brk.h"
+#include "malloc.h"
 #include <unistd.h>
 #include <string.h> 
 #include <errno.h> 
@@ -126,7 +128,11 @@ void free(void * block) {
 
     bh = (header *) block - 1; /* point to block header */
     h = free_list;
-    while (bh <= h || h->block.next <= bh) { 
+
+	/* Loop while both current and next free block is less than
+ 	 * block to be freed.
+ 	 */
+    while ( h->block.next <= bh && h < bh ) { 
     /*for(h = free_list; !(bh > h && bh < h->block.next); h = h->block.next) {*/
         fprintf(stderr, "h = %d\n", h);
         fprintf(stderr, "bh = %d\n", bh);
