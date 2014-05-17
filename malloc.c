@@ -22,11 +22,11 @@ typedef double alignment_variable; /* the largest possible alignment size */
  *                                 ^ address returned to user
  */
 union header { /* block header */ 
-    struct {
-        union header *next; /* pointer to next block (header) */
-        unsigned size;
-    } block;
-    alignment_variable x; /* align header size */
+	struct {
+		union header *next; /* pointer to next block (header) */
+		unsigned size;
+	} block;
+	alignment_variable x; /* align header size */
 };
 
 typedef union header header; /* skip the union keyword */
@@ -39,38 +39,38 @@ static void * __endHeap = 0;
 
 void * endHeap(void)
 {
-  if(__endHeap == 0) __endHeap = sbrk(0);
-  return __endHeap;
+	if(__endHeap == 0) __endHeap = sbrk(0);
+	return __endHeap;
 }
 #endif
 
 static header *request_memory(unsigned naligned) {
-  void *cp;
-  header *up;
+	void *cp;
+	header *up;
 
 #ifdef MMAP
-    unsigned noPages;
-    if(__endHeap == 0) __endHeap = sbrk(0);
+	unsigned noPages;
+	if(__endHeap == 0) __endHeap = sbrk(0);
 #endif
 
-    if(naligned < MIN_ALLOC) naligned = MIN_ALLOC;
+	if(naligned < MIN_ALLOC) naligned = MIN_ALLOC;
 
 #ifdef MMAP
-    noPages = ((naligned*sizeof(header))-1)/getpagesize() + 1;
-    cp = mmap(__endHeap, noPages*getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-    naligned = (noPages*getpagesize())/sizeof(header);
-    __endHeap += noPages*getpagesize();
+	noPages = ((naligned*sizeof(header))-1)/getpagesize() + 1;
+	cp = mmap(__endHeap, noPages*getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+	naligned = (noPages*getpagesize())/sizeof(header);
+	__endHeap += noPages*getpagesize();
 #else
-    cp = sbrk(naligned*sizeof(header));
+	cp = sbrk(naligned*sizeof(header));
 #endif
-    if(cp == (void *) -1){ /* no space at all */
-        perror("failed to get more memory");
-        return NULL;
-    }
-    up = (header *) cp;
-    up->block.size = naligned;
-    free((void *)(up+1));
-    return free_list;    
+	if(cp == (void *) -1){ /* no space at all */
+		perror("failed to get more memory");
+		return NULL;
+	}
+	up = (header *) cp;
+	up->block.size = naligned;
+	free((void *)(up+1));
+	return free_list;    
 }
 
 /*
@@ -78,83 +78,85 @@ static header *request_memory(unsigned naligned) {
  *
  */
 void *malloc(size_t nbytes) {
-    if (nbytes == 0) return NULL;
+	if (nbytes == 0) return NULL;
 
-    header *h;
-    header *prev_h;
-    /*nalignedmber of aligned units needed (rounded up of course, hence the -1 and +1) */
-    unsigned naligned = (nbytes+sizeof(header)-1)/sizeof(header) + 1; 
+	header *h;
+	header *prev_h;
+	/*nalignedmber of aligned units needed (rounded up of course, hence the -1 and +1) */
+	unsigned naligned = (nbytes+sizeof(header)-1)/sizeof(header) + 1; 
 
-    if (free_list == NULL) { /* initialize free_list */
-        free_list = &head;
-        head.block.next = free_list;
-        head.block.size = 0;
-    }
-    /* loop free_list looking for memory */
-    prev_h = free_list;
-    h = prev_h->block.next;
-    while (1) {
-        /*fprintf(stderr, "naligned = %u\n", naligned);*/
-        /*fprintf(stderr, "block size = %u\n", h->block.size);*/
-        if (h->block.size >= naligned) {
-            if (h->block.size == naligned) { /* found perfect block! */
+	if (free_list == NULL) { /* initialize free_list */
+		free_list = &head;
+		head.block.next = free_list;
+		head.block.size = 0;
+	}
+
+	/* loop free_list looking for memory */
+	prev_h = free_list;
+	h = prev_h->block.next;
+	while (1) {
+		/*fprintf(stderr, "naligned = %u\n", naligned);*/
+		/*fprintf(stderr, "block size = %u\n", h->block.size);*/
+		if (h->block.size >= naligned) {
+			if (h->block.size == naligned) { /* found perfect block! */
                 prev_h->block.next = h->block.next; /* unlink h */
-            }
-            else if (h->block.size > naligned) { /* big enough */
-                h += (h->block.size - naligned); /* offset h */
-                h->block.size = naligned; /* update size */
-            }
-            free_list = prev_h;
-            /*fprintf(stderr, "Returning.\n");*/
-            return (void *) (h + 1); /* return start of block */
-        }
+			}else if(h->block.size > naligned) { /* big enough */
+				h += (h->block.size - naligned); /* offset h */
+				h->block.size = naligned; /* update size */
+			}
+			free_list = prev_h;
+			/*fprintf(stderr, "Returning.\n");*/
+			return (void *) (h + 1); /* return start of block */
+		}
 
-        if (h == free_list) { /* wrapped around */
-            h = request_memory(naligned);
-            /*fprintf(stderr, "Requesting memory from OS\n");*/
-            if (h == NULL) return NULL; /* no memory left */
-            /*fprintf(stderr, "Got memory from OS: %u\n", stderr, h->block.size);*/
-        }
-        /* move to next entry */
-        prev_h = h;
-        h = h->block.next;
-    }
+		if (h == free_list) { /* wrapped around */
+			h = request_memory(naligned);
+			/*fprintf(stderr, "Requesting memory from OS\n");*/
+			if (h == NULL) return NULL; /* no memory left */
+			/*fprintf(stderr, "Got memory from OS: %u\n", stderr, h->block.size);*/
+		}
+		/* move to next entry */
+		prev_h = h;
+		h = h->block.next;
+	}
 }
 
 void free(void * block) {
-    header *bh, *h;
+	header *bh, *h;
 
-    if(block == NULL) return; /* Nothing to do */
+	if(block == NULL) return; /* Nothing to do */
 
-    bh = (header *) block - 1; /* point to block header */
-    h = free_list;
+	bh = (header *) block - 1; /* point to block header */
+	h = free_list;
 
 	/* Loop while both current and next free block is less than
- 	 * block to be freed.
- 	 */
-    while ( h->block.next <= bh && h < bh ) { 
-    /*for(h = free_list; !(bh > h && bh < h->block.next); h = h->block.next) {*/
-        fprintf(stderr, "h = %d\n", h);
-        fprintf(stderr, "bh = %d\n", bh);
-        if(h >= h->block.next && (bh > h || bh < h->block.next))
-            break; /* freed block at start or end of arena */
+	 * block to be freed.
+	 */
+	while ( h->block.next <= bh && h < bh ) { 
+	/*for(h = free_list; !(bh > h && bh < h->block.next); h = h->block.next) {*/
+		fprintf(stderr, "h = %d\n", h);
+		fprintf(stderr, "bh = %d\n", bh);
+		if(h >= h->block.next && (bh > h || bh < h->block.next))
+			break; /* freed block at start or end of arena */
 
-        h = h->block.next;
-    }
+		h = h->block.next;
+	}
 
-    if(bh + bh->block.size == h->block.next) { /* join to upper nb */
-        bh->block.size += h->block.next->block.size;
-        bh->block.next = h->block.next->block.next;
-    }
-    else
-        bh->block.next = h->block.next;
-    if (h + h->block.size == bh) { /* join to lower nbr */
-        h->block.size += bh->block.size;
-        h->block.next = bh->block.next;
-    } 
-    else
-        h->block.next = bh;
-    free_list = h;
+	if(bh + bh->block.size == h->block.next) { /* join to upper nb */
+		bh->block.size += h->block.next->block.size;
+		bh->block.next = h->block.next->block.next;
+	}else{
+		bh->block.next = h->block.next;
+	}
+
+	if (h + h->block.size == bh) { /* join to lower nbr */
+		h->block.size += bh->block.size;
+		h->block.next = bh->block.next;
+	}else{
+		h->block.next = bh;
+	}
+
+	free_list = h;
 }
 
 void *realloc(void * block, size_t nbytes) {
@@ -165,5 +167,5 @@ void *realloc(void * block, size_t nbytes) {
 		return NULL;
 	}
 
-    return NULL;
+	return NULL;
 }
