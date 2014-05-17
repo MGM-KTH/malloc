@@ -1,3 +1,4 @@
+#!/bin/bash
 cp malloc.c testing/
 cp malloc.h testing/
 cd testing/
