@@ -1,5 +1,7 @@
+#define _GNU_SOURCE
 #include <stdio.h> /* for debugging */
 #include "brk.h"
+#include "malloc.h"
 #include <unistd.h>
 #include <string.h> 
 #include <errno.h> 
@@ -71,7 +73,8 @@ static header *request_memory(unsigned naligned) {
 
 #ifdef MMAP
     noPages = ((naligned*sizeof(header))-1)/getpagesize() + 1;
-    cp = mmap(__endHeap, noPages*getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    cp = mmap(__endHeap, noPages*getpagesize(),
+			PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
     naligned = (noPages*getpagesize())/sizeof(header);
     __endHeap += noPages*getpagesize();
 #else
