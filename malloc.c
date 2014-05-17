@@ -136,12 +136,12 @@ void free(void * block) {
         h = h->block.next;
     }
 
-    if (bh + bh->block.size == h->block.next) { /* join to upper nb */
+    if(bh + bh->block.size == h->block.next) { /* join to upper nb */
         bh->block.size += h->block.next->block.size;
         bh->block.next = h->block.next->block.next;
     }else
         bh->block.next = h->block.next;
-    if (h + h->block.size == bh) { /* join to lower nbr */
+    if(h + h->block.size == bh) { /* join to lower nbr */
         h->block.size += bh->block.size;
         h->block.next = bh->block.next;
     }else
