@@ -34,22 +34,7 @@ typedef union header header; /* skip the union keyword */
 static header head; /* head of linked list of allocated memory */
 static header *free_list = NULL;
 
-
-/*int main() {
-    header something;
-    double x;
-    union header *next;
-    unsigned block_size;
-
-    printf("union header pointer size: %d\n", sizeof(next));
-    printf("unsigned size: %d\n", sizeof(block_size));
-    printf("double size (alignment_variable): %d bytes\n", sizeof(alignment_variable));
-    printf("union header size: %d bytes\n", sizeof(something));
-    return 0;
-}*/
-
 #ifdef MMAP
-
 static void * __endHeap = 0;
 
 void * endHeap(void)
@@ -57,7 +42,6 @@ void * endHeap(void)
   if(__endHeap == 0) __endHeap = sbrk(0);
   return __endHeap;
 }
-
 #endif
 
 static header *request_memory(unsigned naligned) {
@@ -138,27 +122,27 @@ void *malloc(size_t nbytes) {
     }
 }
 
-
 void free(void * block) {
     header *bh, *h;
 
-    if(block == NULL) return;                                /* Nothing to do */
+    if(block == NULL) return; /* Nothing to do */
 
-    bh = (header *) block - 1;                               /* point to block header */
+	/* point to header of the block to be freed */
+    bh = (header *) block - 1;
     for(h = free_list; !(bh > h && bh < h->block.next); h = h->block.next) {
         fprintf(stderr, "h = %d\n", h);
         fprintf(stderr, "bh = %d\n", bh);
         if(h >= h->block.next && (bh > h || bh < h->block.next))
-            break;                                            /* freed block at start or end of arena */
+            break; /* freed block at start or end of arena */
     }
 
-    if(bh + bh->block.size == h->block.next) {                     /* join to upper nb */
+    if(bh + bh->block.size == h->block.next) { /* join to upper nb */
         bh->block.size += h->block.next->block.size;
         bh->block.next = h->block.next->block.next;
     }
     else
         bh->block.next = h->block.next;
-    if (h + h->block.size == bh) {                             /* join to lower nbr */
+    if (h + h->block.size == bh) { /* join to lower nbr */
         h->block.size += bh->block.size;
         h->block.next = bh->block.next;
     } 
@@ -166,7 +150,6 @@ void free(void * block) {
         h->block.next = bh;
     free_list = h;
 }
-
 
 void *realloc(void * block, size_t nbytes) {
 	if( NULL == block) { /* If block ptr is NULL, behave as malloc */
