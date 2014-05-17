@@ -142,11 +142,14 @@ void free(void * block) {
     if(block == NULL) return;                                /* Nothing to do */
 
     bh = (header *) block - 1;                               /* point to block header */
-    for(h = free_list; !(bh > h && bh < h->block.next); h = h->block.next) {
+    h = free_list;
+    while (h <= bh || bh <= h->block.next) {
         fprintf(stderr, "h = %d\n", h);
         fprintf(stderr, "bh = %d\n", bh);
         if(h >= h->block.next && (bh > h || bh < h->block.next))
             break;                                            /* freed block at start or end of arena */
+
+        h = h->block.next;
     }
 
     if(bh + bh->block.size == h->block.next) {                     /* join to upper nb */
