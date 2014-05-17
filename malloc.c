@@ -24,7 +24,7 @@ typedef double alignment_variable; /* the largest possible alignment size */
 union header { /* block header */ 
 	struct {
 		union header *next; /* pointer to next block (header) */
-		unsigned size;
+		unsigned size; /* Includes header */
 	} block;
 	alignment_variable x; /* align header size */
 };
@@ -171,15 +171,29 @@ void *realloc(void * block, size_t nbytes) {
 
 	/* Increase size */
 	if(nunits > bh->block.size) {
+		/* Lazy implementation */
+		/* Allocate new memory */
+		void* new_area = malloc(nbytes);
+		/* Copy data from old block to new area */
+		memcpy(new_area, block, (bh->block.size-1)*sizeof(header));
+
+		/* Free old block */
+		free(block);
+
+		return new_area;
+
 	}else{ /* Decrease size */
 		/* Get start position of new block to be freed */
-		h = bh + 1 + nunits;
+		h = bh + nunits;
 		/* Set blocksize of new free block */
 		h->block.size = bh->block.size - nunits;
 		/* Update blocksize of block to be shrinked */
 		bh->block.size = nunits;
 
+		/* Free the tail */
 		free((void*)h+1);
+
+		return (void*)bh+1;
 	}
 
 	return NULL;
