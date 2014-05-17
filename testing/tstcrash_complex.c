@@ -31,7 +31,7 @@ void too_much(){
 
 int main(int argc, char *argv[]){
   static char arr[20];
-  caddr_t highbreak, lowbreak;
+  void * highbreak, * lowbreak;
   int add = 0;
   char *p, *q, *r, *t;
 
