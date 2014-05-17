@@ -1,0 +1,4 @@
+In order to use the built-in malloc with the test files we need to undefine MMAP since endheap is something ICT defined.
+
+I have currently commented out brk and sbrk from brk.h since the "#ifndef _UNISTD_H"
+seems to be wrong...Not needed though. 
