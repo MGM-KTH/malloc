@@ -75,11 +75,8 @@ static header *request_memory(unsigned naligned) {
 	return free_list;    
 }
 
-/*
- * Inspiration source: The C programming language, chapter 8.7
- *
- */
-void *malloc(size_t nbytes) {
+
+void *malloc_first_fit(size_t nbytes) {
 	if (nbytes == 0) return NULL;
 
 	header *h;
@@ -119,6 +116,56 @@ void *malloc(size_t nbytes) {
 		prev_h = h;
 		h = h->block.next;
 	}
+}
+
+
+
+void *malloc(size_t nbytes) {
+    if (nbytes == 0) return NULL;
+
+    header *h;
+    header *prev_h;
+    header *best = NULL;
+    /*nalignedmber of aligned units needed (rounded up of course, hence the -1 and +1) */
+    unsigned naligned = (nbytes+sizeof(header)-1)/sizeof(header) + 1; 
+
+    if (free_list == NULL) { /* initialize free_list */
+        free_list = &head;
+        head.block.next = free_list;
+        head.block.size = 0;
+    }
+
+    /* loop free_list looking for memory */
+    prev_h = free_list;
+    h = prev_h->block.next;
+    while(1) {
+        if(h->block.size >= naligned) {
+            if(best == NULL)
+                best = h;
+            else if (best->block.size < h->block.size)
+                best = h;
+            if (best->block.size == naligned)
+                break;
+        }
+        if(h == free_list) { /* wrapped around */
+            if (best != NULL)
+                break;
+            h = request_memory(naligned);
+            if (h == NULL) return NULL; /* no memory left */
+        }
+        /* move to next entry */
+        prev_h = h;
+        h = h->block.next;
+    }
+    if(best->block.size == naligned) { /* found perfect block! */
+        prev_h->block.next = best->block.next; /* unlink h */
+    }else {         
+        h->block.size -= naligned;
+        h += h->block.size;
+        h->block.size = naligned;
+    }
+    free_list = prev_h;
+    return (void *) (best + 1); /* return start of block */        
 }
 
 void free(void * block) {
