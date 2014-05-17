@@ -129,10 +129,11 @@ void free(void * block) {
 	bh = (header *) block - 1; /* point to block header */
 	h = free_list;
 
-	/* Loop while both current and next free block is less than
+	/* Loop while both current and next free block is more than
 	 * block to be freed.
 	 */
-	while ( h->block.next <= bh && h < bh ) { 
+	while(h > bh && h->block.next > bh) {
+	/*while ( h->block.next <= bh && h < bh ) { */
 	/*for(h = free_list; !(bh > h && bh < h->block.next); h = h->block.next) {*/
 		fprintf(stderr, "h = %d\n", h);
 		fprintf(stderr, "bh = %d\n", bh);
@@ -142,7 +143,7 @@ void free(void * block) {
 		h = h->block.next;
 	}
 
-	if(bh + bh->block.size == h->block.next) { /* join to upper nb */
+	if (bh + bh->block.size == h->block.next) { /* join to upper nb */
 		bh->block.size += h->block.next->block.size;
 		bh->block.next = h->block.next->block.next;
 	}else{
