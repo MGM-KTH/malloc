@@ -1,5 +1,5 @@
 CC = GCC
-CFLAGS	= -c -g -Wall -ansi -DSTRATEGY=2
+CFLAGS	= -c -g -Wall -ansi -DSTRATEGY=2 -O4
 
 all: malloc
 
