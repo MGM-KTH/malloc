@@ -187,13 +187,14 @@ void *realloc(void * block, size_t nbytes) {
 		h = bh + nunits;
 		/* Set blocksize of new free block */
 		h->block.size = bh->block.size - nunits;
+        fprintf(stderr, "h size = %u\n", h->block.size);
 		/* Update blocksize of block to be shrinked */
 		bh->block.size = nunits;
 
 		/* Free the tail */
-		free((void*)h+1);
+		free((void *)(h+1));
 
-		return (void*)bh+1;
+		return (void *)(bh+1);
 	}
 
 	return NULL;
