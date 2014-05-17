@@ -45,5 +45,12 @@ void free(void * block) {
 
 
 void *realloc(void * block, size_t nbytes) {
+	if( NULL == block) { /* If block ptr is NULL, behave as malloc */
+		return malloc(nbytes);
+	}else if( 0 == nbytes ) { /* If size is 0 and ptr!=NULL, behave as free */
+		free(block);
+		return NULL;
+	}
+
     return NULL;
 }
