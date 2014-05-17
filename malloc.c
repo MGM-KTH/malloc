@@ -21,12 +21,14 @@ typedef double alignment_variable; /* the largest possible alignment size */
  * |                       |      |                     |
  *                                 ^ address returned to user
  */
-union header { /* block header */ 
+
+/* block header */ 
+union header {
 	struct {
 		union header *next; /* pointer to next block (header) */
-		unsigned size; /* Includes header */
+		unsigned size;      /* Includes header */
 	} block;
-	alignment_variable x; /* align header size */
+	alignment_variable x;   /* align header size */
 };
 
 typedef union header header; /* skip the union keyword */
@@ -37,9 +39,9 @@ static header *free_list = NULL;
 
 
 #ifdef MMAP
-static void * __endHeap = 0;
+static void *__endHeap = 0;
 
-void * endHeap(void)
+void *endHeap(void)
 {
 	if(__endHeap == 0) __endHeap = sbrk(0);
 	return __endHeap;
@@ -121,7 +123,10 @@ void *malloc(size_t nbytes) {
 	}
 }
 
-void free(void * block) {
+/*
+ * Free the memory beginning at adress block
+ */
+void free(void *block) {
 	header *bh, *h;
 
 	if(block == NULL) return; /* Nothing to do */
@@ -149,7 +154,11 @@ void free(void * block) {
     free_list = h;
 }
 
-void *realloc(void * block, size_t nbytes) {
+/*
+ * Shrink or grow the memory area beginning at adress block,
+ * move memory area if necessary
+ */
+void *realloc(void *block, size_t nbytes) {
 	if( NULL == block) { /* If block ptr is NULL, behave as malloc */
 		return malloc(nbytes);
 	}else if( 0 == nbytes ) { /* If size is 0 and ptr!=NULL, behave as free */
