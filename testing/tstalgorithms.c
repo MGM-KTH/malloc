@@ -80,8 +80,7 @@ int main(int argc, char *argv[])
       memPosts[i].size = rand()%(MAXSIZE/2);
       memPosts[i].ptr = (double*) malloc(memPosts[i].size*sizeof(double));
       if ( memPosts[i].size == 0 &&  memPosts[i].ptr!= NULL )
-/*	MESSAGE("* ERROR: malloc doesn't return NULL pointer on zero size\n");*/
-		  ;
+	MESSAGE("* ERROR: malloc doesn't return NULL pointer on zero size\n");
       else if( memPosts[i].size && memPosts[i].ptr == NULL ) {
 	MESSAGE("* ERROR: malloc returned NULL on non-zero size request\n");
 	  }
