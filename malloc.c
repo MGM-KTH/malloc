@@ -166,5 +166,30 @@ void *realloc(void * block, size_t nbytes) {
 		return NULL;
 	}
 
+	header *bh, *h;
+
+	unsigned nunits = (nbytes + sizeof(header) - 1) / sizeof(header) + 1;
+
+	/* Get the header for existing block */
+	bh = (header *) block - 1;
+
+	/* No change in size, return to sender */
+	if(nunits == bh->block.size) {
+		return block;
+	}
+
+	/* Increase size */
+	if(nunits > bh->block.size) {
+	}else{ /* Decrease size */
+		/* Get start position of new block to be freed */
+		h = bh + 1 + nunits;
+		/* Set blocksize of new free block */
+		h->block.size = bh->block.size - nunits;
+		/* Update blocksize of block to be shrinked */
+		bh->block.size = nunits;
+
+		free((void*)h+1);
+	}
+
 	return NULL;
 }
