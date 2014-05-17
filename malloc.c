@@ -124,9 +124,7 @@ void *malloc_first_fit(size_t nbytes) {
 void *malloc(size_t nbytes) {
     if (nbytes == 0) return NULL;
 
-    header *h;
-    header *prev_h;
-    header *best = NULL;
+    header *h, *prev_h, *best = NULL, *prev_best = NULL;
     /*nalignedmber of aligned units needed (rounded up of course, hence the -1 and +1) */
     unsigned naligned = (nbytes+sizeof(header)-1)/sizeof(header) + 1; 
 
@@ -141,10 +139,14 @@ void *malloc(size_t nbytes) {
     h = prev_h->block.next;
     while(1) {
         if(h->block.size >= naligned) {
-            if(best == NULL)
+            if(best == NULL) {
                 best = h;
-            else if (best->block.size < h->block.size)
+                prev_best = prev_h;
+            }
+            else if (best->block.size < h->block.size) {
                 best = h;
+                prev_best = prev_h;
+            }
             if (best->block.size == naligned)
                 break;
         }
@@ -159,13 +161,13 @@ void *malloc(size_t nbytes) {
         h = h->block.next;
     }
     if(best->block.size == naligned) { /* found perfect block! */
-        prev_h->block.next = best->block.next; /* unlink h */
+        prev_best->block.next = best->block.next; /* unlink best */
     }else {         
-        h->block.size -= naligned;
-        h += h->block.size;
-        h->block.size = naligned;
+        best->block.size -= naligned;
+        best += best->block.size;
+        best->block.size = naligned;
     }
-    free_list = prev_h;
+    free_list = prev_best;
     return (void *) (best + 1); /* return start of block */        
 }
 
