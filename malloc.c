@@ -132,9 +132,9 @@ void free(void * block) {
 	/* Loop while both current and next free block is more than
  	 * block to be freed.
  	 */
-    while(h > bh && h->block.next > bh) {
+    /*while(h > bh && h->block.next > bh) {*/
     /*while ( h->block.next <= bh && h < bh ) { */
-    /*for(h = free_list; !(bh > h && bh < h->block.next); h = h->block.next) {*/
+    for(h = free_list; !(bh > h && bh < h->block.next); h = h->block.next) {
         fprintf(stderr, "h = %d\n", h);
         fprintf(stderr, "bh = %d\n", bh);
         if(h >= h->block.next && (bh > h || bh < h->block.next))
