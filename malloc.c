@@ -111,8 +111,8 @@ void *malloc(size_t nbytes) {
     prev_h = free_list;
     h = prev_h->block.next;
     while (1) {
-        fprintf(stderr, "naligned = %u\n", naligned);
-        fprintf(stderr, "block size = %u\n", h->block.size);
+        /*fprintf(stderr, "naligned = %u\n", naligned);*/
+        /*fprintf(stderr, "block size = %u\n", h->block.size);*/
         if (h->block.size >= naligned) {
             if (h->block.size == naligned) { /* found perfect block! */
                 prev_h->block.next = h->block.next; /* unlink h */
@@ -122,13 +122,15 @@ void *malloc(size_t nbytes) {
                 h->block.size = naligned; /* update size */
             }
             free_list = prev_h;
+            /*fprintf(stderr, "Returning.\n");*/
             return (void *) (h + 1); /* return start of block */
         }
 
         if (h == free_list) { /* wrapped around */
             h = request_memory(naligned);
+            /*fprintf(stderr, "Requesting memory from OS\n");*/
             if (h == NULL) return NULL; /* no memory left */
-            fprintf(stderr, "Got memory from OS: %u\n", stderr, h->block.size);
+            /*fprintf(stderr, "Got memory from OS: %u\n", stderr, h->block.size);*/
         }
         /* move to next entry */
         prev_h = h;
@@ -138,7 +140,31 @@ void *malloc(size_t nbytes) {
 
 
 void free(void * block) {
+    header *bh, *h;
 
+    if(block == NULL) return;                                /* Nothing to do */
+
+    bh = (header *) block - 1;                               /* point to block header */
+    for(h = free_list; !(bh > h && bh < h->block.next); h = h->block.next) {
+        fprintf(stderr, "h = %d\n", h);
+        fprintf(stderr, "bh = %d\n", bh);
+        if(h >= h->block.next && (bh > h || bh < h->block.next))
+            break;                                            /* freed block at start or end of arena */
+    }
+
+    if(bh + bh->block.size == h->block.next) {                     /* join to upper nb */
+        bh->block.size += h->block.next->block.size;
+        bh->block.next = h->block.next->block.next;
+    }
+    else
+        bh->block.next = h->block.next;
+    if (h + h->block.size == bh) {                             /* join to lower nbr */
+        h->block.size += bh->block.size;
+        h->block.next = bh->block.next;
+    } 
+    else
+        h->block.next = bh;
+    free_list = h;
 }
 
 
