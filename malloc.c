@@ -1,7 +1,23 @@
+#define SYSTEM_MALLOC 0
+#define FIRST_FIT 1
+#define BEST_FIT 2
+#define WORST_FIT 3
+#define QUICK_FIT 4
+
+#ifndef STRATEGY
+#define STRATEGY BEST_FIT /* default: best fit */
+#endif
+
 #define _GNU_SOURCE
+
+#ifdef __APPLE__
+#define MAP_ANONYMOUS MAP_ANON
+#endif
+
 #include <stdio.h> /* for debugging */
 #include "brk.h"
 #include "malloc.h"
+#include <stdlib.h>
 #include <unistd.h>
 #include <string.h> 
 #include <errno.h> 
@@ -9,9 +25,17 @@
 
 #define MIN_ALLOC 1024 /* minimum nalignedmber of bytes to request */
 
-#ifdef __APPLE__
-#define MAP_ANONYMOUS MAP_ANON
+#ifdef MMAP
+static void *__endHeap = 0;
+
+void *endHeap(void)
+{
+    if(__endHeap == 0) __endHeap = sbrk(0);
+    return __endHeap;
+}
 #endif
+
+#if STRATEGY != SYSTEM_MALLOC
 
 typedef double alignment_variable; /* the largest possible alignment size */
 
@@ -36,17 +60,6 @@ typedef union header header; /* skip the union keyword */
 static header head; /* head of linked list of allocated memory */
 static header *free_list = NULL;
 
-
-
-#ifdef MMAP
-static void *__endHeap = 0;
-
-void *endHeap(void)
-{
-	if(__endHeap == 0) __endHeap = sbrk(0);
-	return __endHeap;
-}
-#endif
 
 static header *request_memory(unsigned naligned) {
 	void *cp;
@@ -74,16 +87,17 @@ static header *request_memory(unsigned naligned) {
 	up = (header *) cp;
 	up->block.size = naligned;
 	free((void *)(up+1));
-	return free_list;    
+	return free_list;
 }
 
 
-void *malloc_first_fit(size_t nbytes) {
+#if STRATEGY == FIRST_FIT
+void *malloc(size_t nbytes) {
 	if (nbytes == 0) return NULL;
 
-	header *h;
-	header *prev_h;
-	/*nalignedmber of aligned units needed (rounded up of course, hence the -1 and +1) */
+	header *h, *prev_h;
+
+	/* number of aligned units needed for nbytes bytes */
 	unsigned naligned = (nbytes+sizeof(header)-1)/sizeof(header) + 1; 
 
 	if (free_list == NULL) { /* initialize free_list */
@@ -111,7 +125,7 @@ void *malloc_first_fit(size_t nbytes) {
 		}
 
 		if(h == free_list) { /* wrapped around */
-			h = request_memory(naligned);
+			h = request_memory(naligned); /* request more heap space */
 			if (h == NULL) return NULL; /* no memory left */
 		}
 		/* move to next entry */
@@ -119,14 +133,15 @@ void *malloc_first_fit(size_t nbytes) {
 		h = h->block.next;
 	}
 }
+#endif
 
-
+#if STRATEGY == BEST_FIT
 void *malloc(size_t nbytes) {
     if (nbytes == 0) return NULL;
 
     header *h, *prev_h, *best = NULL, *prev_best = NULL;
-    /*nalignedmber of aligned units needed (rounded up of course, hence the -1 and +1) */
-    unsigned naligned = (nbytes+sizeof(header)-1)/sizeof(header) + 1; 
+    unsigned threshold = sizeof(header);
+    unsigned naligned = (nbytes+sizeof(header)-1)/sizeof(header) + 1; /* number of aligned units needed for nbytes bytes */
 
     if (free_list == NULL) { /* initialize free_list */
         free_list = &head;
@@ -139,37 +154,44 @@ void *malloc(size_t nbytes) {
     h = prev_h->block.next;
     while(1) {
         if(h->block.size >= naligned) {
-            if(best == NULL) {
+            if(best == NULL || h->block.size < best->block.size) {
                 best = h;
                 prev_best = prev_h;
             }
-            else if (best->block.size < h->block.size) {
-                best = h;
-                prev_best = prev_h;
-            }
-            if (best->block.size == naligned)
+            if (best->block.size == naligned) /* perfect match */
                 break;
         }
         if(h == free_list) { /* wrapped around */
-            if (best != NULL)
+            if (best != NULL) /* block found */
                 break;
-            h = request_memory(naligned);
+            h = request_memory(naligned); /* request more heap space */
             if (h == NULL) return NULL; /* no memory left */
+
         }
         /* move to next entry */
         prev_h = h;
         h = h->block.next;
     }
-    if(best->block.size == naligned) { /* found perfect block! */
+    if(best->block.size <= naligned + threshold) { /* found perfect block! */
         prev_best->block.next = best->block.next; /* unlink best */
-    }else {         
+    }else {
+        /* todo: free tail! */
+        /*fprintf(stderr, "Sending in best =  %d\n", best);
+        fprintf(stderr, "naligned = %u\n", naligned);
+        fprintf(stderr, "block size = %u\n", best->block.size);
+        best = (header *)realloc(best+1, nbytes) - 1;
+        fprintf(stderr, "Received best =  %d\n", best);
+        fprintf(stderr, "new block size = %u\n", best->block.size);*/
+
+
         best->block.size -= naligned;
         best += best->block.size;
         best->block.size = naligned;
     }
     free_list = prev_best;
-    return (void *) (best + 1); /* return start of block */        
+    return (void *) (best+1); /* return start of block */        
 }
+#endif
 
 
 /*
@@ -208,7 +230,7 @@ void free(void *block) {
  * move memory area if necessary
  */
 void *realloc(void *block, size_t nbytes) {
-	if( NULL == block) { /* If block ptr is NULL, behave as malloc */
+	if(block == NULL) { /* If block ptr is NULL, behave as malloc */
 		return malloc(nbytes);
 	}else if( 0 == nbytes ) { /* If size is 0 and ptr!=NULL, behave as free */
 		free(block);
@@ -232,6 +254,9 @@ void *realloc(void *block, size_t nbytes) {
 		/* Lazy implementation */
 		/* Allocate new memory */
 		void* new_area = malloc(nbytes);
+        if (new_area == NULL) /* malloc failed */
+            return NULL;
+
 		/* Copy data from old block to new area */
 		memcpy(new_area, block, (bh->block.size-1)*sizeof(header));
 
@@ -251,8 +276,10 @@ void *realloc(void *block, size_t nbytes) {
 		/* Free the tail */
 		free((void *)(h+1));
 
-		return (void *)(bh+1);
+		return block;
 	}
 
 	return NULL;
 }
+
+#endif

@@ -13,4 +13,4 @@ void * endHeap(void);
 /*extern void *sbrk( );*/
 #endif
 
-#endif /*_brk_h */
+#endif /* end header guard */
