@@ -34,6 +34,8 @@ typedef union header header; /* skip the union keyword */
 static header head; /* head of linked list of allocated memory */
 static header *free_list = NULL;
 
+
+
 #ifdef MMAP
 static void * __endHeap = 0;
 
@@ -94,26 +96,24 @@ void *malloc(size_t nbytes) {
 	/* loop free_list looking for memory */
 	prev_h = free_list;
 	h = prev_h->block.next;
-	while (1) {
-		/*fprintf(stderr, "naligned = %u\n", naligned);*/
-		/*fprintf(stderr, "block size = %u\n", h->block.size);*/
-		if (h->block.size >= naligned) {
+	while(1) {
+		if(h->block.size >= naligned) {
 			if (h->block.size == naligned) { /* found perfect block! */
                 prev_h->block.next = h->block.next; /* unlink h */
 			}else if(h->block.size > naligned) { /* big enough */
-				h += (h->block.size - naligned); /* offset h */
-				h->block.size = naligned; /* update size */
+				/*h += (h->block.size - naligned);*/ /* offset h */
+				/*h->block.size = naligned;*/ /* update size */
+                h->block.size -= naligned;
+                h += h->block.size;
+                h->block.size = naligned;
 			}
 			free_list = prev_h;
-			/*fprintf(stderr, "Returning.\n");*/
 			return (void *) (h + 1); /* return start of block */
 		}
 
-		if (h == free_list) { /* wrapped around */
+		if(h == free_list) { /* wrapped around */
 			h = request_memory(naligned);
-			/*fprintf(stderr, "Requesting memory from OS\n");*/
 			if (h == NULL) return NULL; /* no memory left */
-			/*fprintf(stderr, "Got memory from OS: %u\n", stderr, h->block.size);*/
 		}
 		/* move to next entry */
 		prev_h = h;
@@ -129,31 +129,22 @@ void free(void * block) {
 	bh = (header *) block - 1; /* point to block header */
 	h = free_list;
 
-	/* Loop while both current and next free block is more than
- 	 * block to be freed.
- 	 */
-    /*while(h > bh && h->block.next > bh) {*/
-    /*while ( h->block.next <= bh && h < bh ) { */
-    for(h = free_list; !(bh > h && bh < h->block.next); h = h->block.next) {
-        fprintf(stderr, "h = %d\n", h);
-        fprintf(stderr, "bh = %d\n", bh);
+    /*for(h = free_list; !(bh > h && bh < h->block.next); h = h->block.next) {*/
+    while(!(bh > h && bh < h->block.next)) {
         if(h >= h->block.next && (bh > h || bh < h->block.next))
             break; /* freed block at start or end of arena */
-
         h = h->block.next;
     }
 
     if (bh + bh->block.size == h->block.next) { /* join to upper nb */
         bh->block.size += h->block.next->block.size;
         bh->block.next = h->block.next->block.next;
-    }
-    else
+    }else
         bh->block.next = h->block.next;
     if (h + h->block.size == bh) { /* join to lower nbr */
         h->block.size += bh->block.size;
         h->block.next = bh->block.next;
-    } 
-    else
+    }else
         h->block.next = bh;
     free_list = h;
 }
@@ -165,6 +156,5 @@ void *realloc(void * block, size_t nbytes) {
 		free(block);
 		return NULL;
 	}
-
 	return NULL;
 }
