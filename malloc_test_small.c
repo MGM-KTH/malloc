@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define SIZE 512
-#define LOOPS 800 /* many loops for small data */
+#define SIZE 1024
+#define LOOPS 500 /* many loops for small data */
 
 int main(int argc, char * argv[]){
     unsigned memory_size;
@@ -23,6 +23,8 @@ int main(int argc, char * argv[]){
                 a[j] = malloc(memory_size);
             }
         }
+        
+        memory_end = endHeap();
 
         diff = clock() - start;
         int msec = diff * 1000 / CLOCKS_PER_SEC;
@@ -32,7 +34,7 @@ int main(int argc, char * argv[]){
         }
 
         /* block size, memory and time */
-        fprintf(stderr,"%u %u %d\n", memory_size,(unsigned)(endHeap() - memory_start)/1000, msec);
+        fprintf(stderr,"%u %u %d\n", memory_size,(unsigned)(memory_end - memory_start)/1000, msec);
 
         reset_free_list();
 

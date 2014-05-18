@@ -10,7 +10,7 @@
 
 #define _GNU_SOURCE
 
-#ifdef __APPLE__
+#ifndef MAP_ANONYMOUS
 #define MAP_ANONYMOUS MAP_ANON
 #endif
 
@@ -26,7 +26,7 @@
 #include <sys/mman.h>
 #include <sys/resource.h>
 
-#define MIN_ALLOC 128 /* minimum number of bytes to request */
+#define MIN_ALLOC 1024 /* minimum number of bytes to request */
 
 #ifdef MMAP
 static void *__endHeap = 0;
@@ -97,15 +97,14 @@ static header *request_memory(unsigned naligned) {
 	unsigned noPages;
 	if(__endHeap == 0) __endHeap = sbrk(0);
 #endif
-
     
-    /*if(naligned < MIN_ALLOC) {
-        if(naligned > MIN_ALLOC/16) {
+    if(naligned < MIN_ALLOC) {
+        if(naligned > MIN_ALLOC/8) {
             naligned = MIN_ALLOC;
         }
-    }*/
+    }
     
-	if(naligned*sizeof(header) < MIN_ALLOC) naligned = MIN_ALLOC;
+	/*if(naligned < MIN_ALLOC) naligned = MIN_ALLOC;*/
 
 #ifdef MMAP
 	noPages = ((naligned*sizeof(header))-1)/getpagesize() + 1;
@@ -115,10 +114,10 @@ static header *request_memory(unsigned naligned) {
 #else
 	cp = sbrk(naligned*sizeof(header));
 #endif
-	if(cp == (void *) -1){ /* no space at all */
-		perror("failed to get more memory");
-		return NULL;
-	}
+    if(cp == (void *) -1){ /* no space at all */
+        perror("failed to get more memory");
+        return NULL;
+    }
 	up = (header *) cp;
 	up->block.size = naligned;
 	free((void *)(up+1));
@@ -161,10 +160,8 @@ void *malloc(size_t nbytes) {
 			h = request_memory(naligned); /* request more heap space */
 			if (h == NULL) return NULL; /* no memory left */
 		}
-        else {
-    		prev_h = h;
-    		h = h->block.next;
-        }
+		prev_h = h;
+		h = h->block.next;
 	}
 }
 #endif
@@ -201,11 +198,10 @@ void *malloc(size_t nbytes) {
                 break;
             h = request_memory(naligned); /* request more heap space */
             if (h == NULL) return NULL; /* no memory left */
-
         }
-        /* move to next entry */
         prev_h = h;
         h = h->block.next;
+        
     }
     if(best->block.size <= naligned + threshold) { /* found perfect block! */
         prev_best->block.next = best->block.next; /* unlink best */
