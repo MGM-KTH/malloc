@@ -1,9 +1,11 @@
 *.o
 malloc
-malloc_test
 .DS_Store
 
 # test files
+malloc_test
+*.dat
+*.png
 t0
 t1
 t2
