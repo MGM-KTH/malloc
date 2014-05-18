@@ -11,4 +11,8 @@ echo "RUNNING BEST FIT..."
 ./malloc_test < test_data.in 2> best_fit.dat
 
 ./gnu_plot.sh
-open plot.png
+if [ "$(uname)" == "Darwin" ]; then
+    open plot.png
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    xdg-open plot.png
+fi

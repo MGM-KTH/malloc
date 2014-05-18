@@ -1,4 +1,4 @@
-#!/usr/local/bin/gnuplot
+#!/usr/bin/env gnuplot
 set terminal png
 set output "plot.png"
 set style data lines
