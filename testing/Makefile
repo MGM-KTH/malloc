@@ -10,8 +10,8 @@ CFLAGS	= -g -Wall -ansi -DSTRATEGY=2 -pg
 
 XFLAGS	= -g -Wall -DSTRATEGY=2
 
-CC	= gcc -ansi -pedantic -Wall -g -pipe -O -pg
-#CC	= gcc 
+#CC	= gcc -ansi -pedantic -Wall -g -pipe -O -pg
+CC	= gcc 
 
 
 all: $(BIN)

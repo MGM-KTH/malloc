@@ -131,6 +131,7 @@ int main(int argc, char *argv[])
   end = (void *) sbrk(0);
 #endif
 
+  /*fprintf(stderr, "start = %x, end = %x\n", (unsigned)start, (unsigned)end);*/
   fprintf(stderr,
 	  "%s: Max memory allocated %d\n%s: Memory consumed %ld\n",
 	  progname,
