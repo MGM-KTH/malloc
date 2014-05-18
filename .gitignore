@@ -3,4 +3,12 @@ malloc
 .DS_Store
 
 # test files
-testing/
+t0
+t1
+t2
+t3
+t4
+t5
+t6
+t7
+t7.dSym
