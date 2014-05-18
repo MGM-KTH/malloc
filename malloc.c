@@ -26,7 +26,7 @@
 #include <sys/mman.h>
 #include <sys/resource.h>
 
-#define MIN_ALLOC 1024 /* minimum number of bytes to request */
+#define MIN_ALLOC 128 /* minimum number of bytes to request */
 
 #ifdef MMAP
 static void *__endHeap = 0;
@@ -89,8 +89,6 @@ int main() {
 #endif
 
 
-
-
 static header *request_memory(unsigned naligned) {
 	void *cp;
 	header *up;
@@ -101,13 +99,13 @@ static header *request_memory(unsigned naligned) {
 #endif
 
     
-    if(naligned < MIN_ALLOC) {
-        if(naligned > MIN_ALLOC/8) {
+    /*if(naligned < MIN_ALLOC) {
+        if(naligned > MIN_ALLOC/16) {
             naligned = MIN_ALLOC;
         }
-    }
+    }*/
     
-	/*if(naligned < MIN_ALLOC) naligned = MIN_ALLOC;*/
+	if(naligned*sizeof(header) < MIN_ALLOC) naligned = MIN_ALLOC;
 
 #ifdef MMAP
 	noPages = ((naligned*sizeof(header))-1)/getpagesize() + 1;
@@ -127,10 +125,10 @@ static header *request_memory(unsigned naligned) {
 	return free_list;
 }
 
-
 #if STRATEGY == FIRST_FIT
 void *malloc(size_t nbytes) {
 	if (nbytes == 0) return NULL;
+    if(nbytes >= ULONG_MAX - sizeof(header)) return NULL; /* overflow */
 
 	header *h, *prev_h;
 
@@ -150,7 +148,7 @@ void *malloc(size_t nbytes) {
 		if(h->block.size >= naligned) {
 			if (h->block.size == naligned) { /* found perfect block! */
                 prev_h->block.next = h->block.next; /* unlink h */
-			}else if(h->block.size > naligned) { /* bigger. allocate tail */
+			}else { /* bigger. allocate tail */
                 h->block.size -= naligned;
                 h += h->block.size;
                 h->block.size = naligned;
@@ -163,9 +161,10 @@ void *malloc(size_t nbytes) {
 			h = request_memory(naligned); /* request more heap space */
 			if (h == NULL) return NULL; /* no memory left */
 		}
-		/* move to next entry */
-		prev_h = h;
-		h = h->block.next;
+        else {
+    		prev_h = h;
+    		h = h->block.next;
+        }
 	}
 }
 #endif
@@ -307,6 +306,10 @@ void *realloc(void *block, size_t nbytes) {
 	}
 
 	return NULL;
+}
+
+void reset_free_list() {
+    free_list = NULL;
 }
 
 #endif
