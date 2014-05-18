@@ -14,5 +14,5 @@ echo "RUNNING FIRST FIT..."
 if [ "$(uname)" == "Darwin" ]; then
     open *.png
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-    xdg-open *.png
+    find -iname '*.png' -print0 | xargs -0 -n 1 xdg-open
 fi
