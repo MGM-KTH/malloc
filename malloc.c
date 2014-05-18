@@ -38,27 +38,6 @@ void *endHeap(void)
 }
 #endif
 
-#ifdef LOCAL
-int main() {
-    void *p;
-    /* detta skall fungera korrekt */ 
-    p = malloc(0);
-    free(p);
-    free(NULL);
-    /* detta skall ge tillbaka p == NULL */
-    struct rlimit r;
-    getrlimit(RLIMIT_DATA, &r);
-    p = malloc(2 * r.rlim_max);
-    assert(p == NULL);
-    /* och dessa? */
-    p = realloc(NULL, 17); 
-    assert(p != NULL); /* as malloc 17 */
-    p = realloc(p, 0);
-    assert(p == NULL); /* as free, returns null */
-    p = realloc(NULL, 0);
-    assert(p == NULL); /* empty free */
-}
-#endif
 
 #if STRATEGY != SYSTEM_MALLOC
 
@@ -86,6 +65,32 @@ static header head; /* head of linked list of allocated memory */
 static header *free_list = NULL;
 
 
+
+#ifdef LOCAL
+int main() {
+    void *p;
+    /* detta skall fungera korrekt */ 
+    p = malloc(0);
+    free(p);
+    free(NULL);
+    /* detta skall ge tillbaka p == NULL */
+    struct rlimit r;
+    getrlimit(RLIMIT_DATA, &r);
+    p = malloc(2 * r.rlim_max);
+    assert(p == NULL);
+    /* och dessa? */
+    p = realloc(NULL, 17); 
+    assert(p != NULL); /* as malloc 17 */
+    p = realloc(p, 0);
+    assert(p == NULL); /* as free, returns null */
+    p = realloc(NULL, 0);
+    assert(p == NULL); /* empty free */
+}
+#endif
+
+
+
+
 static header *request_memory(unsigned naligned) {
 	void *cp;
 	header *up;
@@ -95,13 +100,13 @@ static header *request_memory(unsigned naligned) {
 	if(__endHeap == 0) __endHeap = sbrk(0);
 #endif
 
-    /*
+    
     if(naligned < MIN_ALLOC) {
-        if(naligned > MIN_ALLOC/4) {
+        if(naligned > MIN_ALLOC/8) {
             naligned = MIN_ALLOC;
         }
     }
-    */
+    
 	/*if(naligned < MIN_ALLOC) naligned = MIN_ALLOC;*/
 
 #ifdef MMAP
@@ -145,9 +150,7 @@ void *malloc(size_t nbytes) {
 		if(h->block.size >= naligned) {
 			if (h->block.size == naligned) { /* found perfect block! */
                 prev_h->block.next = h->block.next; /* unlink h */
-			}else if(h->block.size > naligned) { /* big enough */
-				/*h += (h->block.size - naligned);*/ /* offset h */
-				/*h->block.size = naligned;*/ /* update size */
+			}else if(h->block.size > naligned) { /* bigger. allocate tail */
                 h->block.size -= naligned;
                 h += h->block.size;
                 h->block.size = naligned;
