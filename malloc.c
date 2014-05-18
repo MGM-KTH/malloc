@@ -15,15 +15,18 @@
 #endif
 
 #include <stdio.h> /* for debugging */
+#include <assert.h> /* for debugging */
 #include "brk.h"
 #include "malloc.h"
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h> 
 #include <errno.h> 
+#include <limits.h>
 #include <sys/mman.h>
+#include <sys/resource.h>
 
-#define MIN_ALLOC 1024 /* minimum nalignedmber of bytes to request */
+#define MIN_ALLOC 1024 /* minimum number of bytes to request */
 
 #ifdef MMAP
 static void *__endHeap = 0;
@@ -35,13 +38,35 @@ void *endHeap(void)
 }
 #endif
 
+#ifdef LOCAL
+int main() {
+    void *p;
+    /* detta skall fungera korrekt */ 
+    p = malloc(0);
+    free(p);
+    free(NULL);
+    /* detta skall ge tillbaka p == NULL */
+    struct rlimit r;
+    getrlimit(RLIMIT_DATA, &r);
+    p = malloc(2 * r.rlim_max);
+    assert(p == NULL);
+    /* och dessa? */
+    p = realloc(NULL, 17); 
+    assert(p != NULL); /* as malloc 17 */
+    p = realloc(p, 0);
+    assert(p == NULL); /* as free, returns null */
+    p = realloc(NULL, 0);
+    assert(p == NULL); /* empty free */
+}
+#endif
+
 #if STRATEGY != SYSTEM_MALLOC
 
 typedef double alignment_variable; /* the largest possible alignment size */
 
 /*
  * |                       |      |                     |
- * | pointer to next block | size | block_size          |
+ * | pointer to next block | size |        block        |
  * |                       |      |                     |
  *                                 ^ address returned to user
  */
@@ -70,7 +95,14 @@ static header *request_memory(unsigned naligned) {
 	if(__endHeap == 0) __endHeap = sbrk(0);
 #endif
 
-	if(naligned < MIN_ALLOC) naligned = MIN_ALLOC;
+    /*
+    if(naligned < MIN_ALLOC) {
+        if(naligned > MIN_ALLOC/4) {
+            naligned = MIN_ALLOC;
+        }
+    }
+    */
+	/*if(naligned < MIN_ALLOC) naligned = MIN_ALLOC;*/
 
 #ifdef MMAP
 	noPages = ((naligned*sizeof(header))-1)/getpagesize() + 1;
@@ -137,7 +169,8 @@ void *malloc(size_t nbytes) {
 
 #if STRATEGY == BEST_FIT
 void *malloc(size_t nbytes) {
-    if (nbytes == 0) return NULL;
+    if(nbytes == 0) return NULL;
+    if(nbytes >= ULONG_MAX - sizeof(header)) return NULL; /* overflow */
 
     header *h, *prev_h, *best = NULL, *prev_best = NULL;
     unsigned threshold = sizeof(header);
@@ -186,10 +219,10 @@ void *malloc(size_t nbytes) {
 
 
 /*
- * Free the memory beginning at adress block
+ * Free the memory beginning at address block
  */
 void free(void *block) {
-	header *bh, *h;
+	header *bh, *h; /* block header and loop variable */
 
 	if(block == NULL) return; /* Nothing to do */
 
@@ -244,7 +277,7 @@ void *realloc(void *block, size_t nbytes) {
 	if(nunits > bh->block.size) {
 		/* Lazy implementation */
 		/* Allocate new memory */
-		void* new_area = malloc(nbytes);
+		void *new_area = malloc(nbytes);
         if (new_area == NULL) /* malloc failed */
             return NULL;
 
