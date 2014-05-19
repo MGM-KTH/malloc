@@ -7,7 +7,7 @@
 #include <time.h>
 
 #define SIZE 512
-#define LOOPS 20 /* many loops for small data */
+#define LOOPS 40
 
 int main(int argc, char * argv[]){
     unsigned memory_size;
