@@ -1,0 +1,147 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Short Sectioned Assignment
+% LaTeX Template
+% Version 1.0 (5/5/12)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Frits Wenneker (http://www.howtotex.com)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%------------------------------------------------------------------------------
+
+\documentclass[paper=a4, fontsize=11pt]{scrartcl} % A4 paper and 11pt font size
+
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+%\usepackage{fourier} % Use the Adobe Utopia font for the document - comment this line to return to the LaTeX default
+\usepackage[english]{babel} % English language/hyphenation
+\usepackage{amsmath,amsfonts,amsthm} % Math packages
+
+\usepackage[utf8]{inputenc} % Needed to support swedish "åäö" chars
+\usepackage{titling} % Used to re-style maketitle
+\usepackage{enumerate}
+\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+
+\usepackage{tabularx}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage[left=3.5cm, right=3.5cm]{geometry} % margins for title page. changed below.
+
+\usepackage{sectsty} % Allows customizing section commands
+\allsectionsfont{\normalfont} % Make all sections centered, the default font and small caps
+
+\usepackage{fancyhdr} % Custom headers and footers
+\pagestyle{fancyplain} % Makes all pages in the document conform to the custom headers and footers
+\fancyhead{} % No page header - if you want one, create it in the same way as the footers below
+\fancyfoot[L]{} % Empty left footer
+\fancyfoot[C]{} % Empty center footer
+\fancyfoot[R]{\thepage} % Page numbering for right footer
+\renewcommand{\headrulewidth}{0pt} % Remove header underlines
+\renewcommand{\footrulewidth}{0pt} % Remove footer underlines
+\setlength{\headheight}{13.6pt} % Customize the height of the header
+
+\numberwithin{equation}{section} % Number equations within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{figure}{section} % Number figures within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{table}{section} % Number tables within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs - comment this line for an assignment with lots of text
+
+\usepackage{fancyvrb}
+\DefineShortVerb{\|}
+
+
+\posttitle{\par\end{center}} % Remove space between author and title
+%----------------------------------------------------------------------------------------
+% TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\title{ 
+\huge Laboration 3 \\ Minneshantering v. 4 \\ % The assignment title
+\vspace{10pt}
+\normalfont \normalsize 
+\textsc{ID2200 - Operating Systems } \\ [25pt] %
+}
+
+\author{Gustaf Lindstedt \\ glindste@kth.se \\ 910301-2135 \and Martin Runelöv \\ mrunelov@kth.se \\ 900330-5738}
+
+\date{\vspace{8pt}\normalsize\today} % Today's date or a custom date
+
+\begin{document}
+
+\maketitle
+
+%------------------------------------------------------------------------------
+\section{Inledning}
+
+% OBS! Se till så att filerna är läsbara för assistenterna (se 3.4 ).
+Koden finns tillgänglig i följande sökväg:\\
+|/afs/ict.kth.se/home/m/r/mrunelov/os/lab3/|\\
+
+samt i appendix.
+
+
+% Verksamhetsberättelse och synpunkter på laborationen. Beskriv arbetets utveckling. Hade du problem med verktygen,
+% kompilatorn m.fl.? Hur lång tid har arbetet tagit? Skriv dina förslag till förändringar, idéer etc. Tyck fritt! 
+% Vi är angelägna om att få respons, så att vi kan förbättra till nästa år.
+
+% Uppskattning av tidsåtgång och eventuella kommentarer kring laborationen
+\subsection{Verksamhetsberättelse}
+
+
+\subsection{Synpunkter}
+
+% jag hatar gprof och om ni vill att man ska använda det borde ni visa hur det funkar 
+% eftersom det aldrig funkar som det ska. Och skolans datorer ger för lite minne för att köra det...
+
+
+
+
+\section{Förberedelsefrågor}
+\begin{enumerate}[1)]
+\item 
+\emph{}
+\end{enumerate}
+
+%------------------------------------------------------------------------------
+\section{Problembeskrivning}
+
+
+
+%------------------------------------------------------------------------------
+\section{Resultat}
+
+% Measurements from "Instruments" time profiler, Mac OS X.
+% Fills an array of size 256, 10 000 times with the specified block size
+\begin{table}[h!] % stay in the fckn results section...
+\begin{tabular}{ c l l l}
+   Block size & First fit & Best fit & System malloc \\
+  \hline \\
+  1 & 57ms & 52ms & 24ms \\
+  2 & 49ms & 39ms & 29ms \\
+  4 & 51ms & 46ms & 30ms \\
+  8 & 58ms & 46ms & 25ms \\
+  16 & 39ms & 36ms & 33ms \\
+\end{tabular}
+\end{table}
+
+
+%------------------------------------------------------------------------------
+\section{Diskussion}
+
+
+
+%------------------------------------------------------------------------------
+\newpage
+\section*{Appendix}
+
+
+\end{document}

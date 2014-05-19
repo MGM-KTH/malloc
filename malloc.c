@@ -26,7 +26,7 @@
 #include <sys/mman.h>
 #include <sys/resource.h>
 
-#define MIN_ALLOC 1024 /* minimum number of bytes to request */
+#define MIN_ALLOC 64 /* minimum number of units to request */
 
 #ifdef MMAP
 static void *__endHeap = 0;
@@ -68,7 +68,20 @@ static header *free_list = NULL;
 
 #if LOCAL
 int main() {
-    void *p;
+    void *p, *memory_start, *memory_end;
+
+    memory_start = endHeap();
+
+    p = malloc(1);
+    p = malloc(1024);
+    p = malloc(1024);
+    p = malloc(2048);
+
+    memory_end = endHeap();
+
+    fprintf(stderr, "Memory used: %u\n", (unsigned)(memory_end - memory_start));
+    fprintf(stderr, "(Should be 8192 with a page size of 4096)\n");
+
     /* detta skall fungera korrekt */ 
     p = malloc(0);
     free(p);
@@ -85,6 +98,8 @@ int main() {
     assert(p == NULL); /* as free, returns null */
     p = realloc(NULL, 0);
     assert(p == NULL); /* empty free */
+
+    return 0;
 }
 #endif
 
@@ -98,17 +113,19 @@ static header *request_memory(unsigned naligned) {
 	if(__endHeap == 0) __endHeap = sbrk(0);
 #endif
     
-    if(naligned < MIN_ALLOC) {
+    /*if(naligned < MIN_ALLOC) {
         if(naligned > MIN_ALLOC/8) {
             naligned = MIN_ALLOC;
         }
-    }
+    }*/
     
-	/*if(naligned < MIN_ALLOC) naligned = MIN_ALLOC;*/
+	if(naligned < MIN_ALLOC) naligned = MIN_ALLOC;
 
 #ifdef MMAP
 	noPages = ((naligned*sizeof(header))-1)/getpagesize() + 1;
+    if(noPages > 10) noPages *= 16; /* assume more large blocks follow */
 	cp = mmap(__endHeap, noPages*getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    /*cp = mmap(0, noPages*getpagesize(), PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);*/
 	naligned = (noPages*getpagesize())/sizeof(header);
 	__endHeap += noPages*getpagesize();
 #else
@@ -123,6 +140,17 @@ static header *request_memory(unsigned naligned) {
 	free((void *)(up+1));
 	return free_list;
 }
+
+
+/* malloc implementations: */
+
+
+#if STRATEGY == QUICK_FIT
+void *malloc(size_t nbytes) {
+    return NULL;
+}
+#endif
+
 
 #if STRATEGY == FIRST_FIT
 void *malloc(size_t nbytes) {

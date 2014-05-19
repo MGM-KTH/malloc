@@ -1,20 +1,48 @@
-gcc -c -w -O4 -DSTRATEGY=2 malloc.c
-gcc -c -w -O4 -pg malloc_test_small.c
+make clean
+gcc -c -w -DSTRATEGY=2 malloc.c
+gcc -c -w malloc_test_small.c
 gcc -o malloc_test *.o
 echo "RUNNING BEST FIT..."
-./malloc_test < test_data.in 2> best_fit.dat
-#/usr/bin/time ./malloc_test < test_data.in
+./malloc_test < data/test_data_small.in 2> data/best_fit_small.dat
 
-gcc -c -w -O4 -DSTRATEGY=1 malloc.c
-gcc -c -w -O4 -pg malloc_test_small.c
+gcc -c -w -DSTRATEGY=1 malloc.c
+gcc -c -w malloc_test_small.c
 gcc -o malloc_test *.o
 echo "RUNNING FIRST FIT..."
-./malloc_test < test_data.in 2> first_fit.dat
-#/usr/bin/time ./malloc_test < test_data.in
+./malloc_test < data/test_data_small.in 2> data/first_fit_small.dat
+
+# gcc -c -w -DSTRATEGY=0 malloc.c
+# gcc -c -w malloc_test_small.c
+# gcc -o malloc_test *.o
+# echo "RUNNING System malloc..."
+# ./malloc_test < data/test_data_small.in 2> data/system_malloc_small.dat
+
+
+make clean
+gcc -c -w -DSTRATEGY=2 malloc.c
+gcc -c -w malloc_test_big.c
+gcc -o malloc_test *.o
+echo "RUNNING BEST FIT..."
+./malloc_test < data/test_data_big.in 2> data/best_fit_big.dat
+
+gcc -c -w -DSTRATEGY=1 malloc.c
+gcc -c -w malloc_test_big.c
+gcc -o malloc_test *.o
+echo "RUNNING FIRST FIT..."
+./malloc_test < data/test_data_big.in 2> data/first_fit_big.dat
+
+# gcc -c -w -DSTRATEGY=0 malloc.c
+# gcc -c -w malloc_test_big.c
+# gcc -o malloc_test *.o
+# echo "RUNNING System malloc..."
+# ./malloc_test < data/test_data_big.in 2> data/system_malloc_big.dat
+
 
 ./gnu_plot.sh
+cd data
 if [ "$(uname)" == "Darwin" ]; then
     open *.png
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     find -iname '*.png' -print0 | xargs -0 -n 1 xdg-open
 fi
+cd ..
