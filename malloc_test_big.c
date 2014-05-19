@@ -1,4 +1,4 @@
-/*#include "malloc.h"*/
+#include "malloc.h"
 #include "brk.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,7 +7,7 @@
 #include <time.h>
 
 #define SIZE 512
-#define LOOPS 40
+#define LOOPS 400
 
 int main(int argc, char * argv[]){
     unsigned memory_size;
@@ -39,7 +39,9 @@ int main(int argc, char * argv[]){
         /* block size, memory and time */
         fprintf(stderr,"%u %u %d\n", memory_size,(unsigned)(memory_end - memory_start)/1000, msec);
 
-        /*reset_free_list();*/
+#if STRATEGY != SYSTEM_MALLOC
+        reset_free_list();
+#endif        
 
         /* block size and time */
         /*fprintf(stderr,"%u %d\n", memory_size,msec);*/

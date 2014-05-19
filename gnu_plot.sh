@@ -28,8 +28,8 @@ set output 'data/memory_plot_small.png'
 
 # memory plot
 plot 'data/first_fit_small.dat' u 1:2 t 'First fit' w lp ls 1, \
-     'data/best_fit_small.dat' u 1:2 t 'Best fit' w lp ls 2
-     # 'data/system_malloc_small.dat' u 1:2 t 'System' w lp ls 3
+     'data/best_fit_small.dat' u 1:2 t 'Best fit' w lp ls 2, \
+     'data/system_malloc_small.dat' u 1:2 t 'System' w lp ls 3
 
 show output
 
@@ -38,8 +38,8 @@ set output 'data/time_plot_small.png'
 
 # time plot
 plot 'data/first_fit_small.dat' u 1:3 t 'First fit' w lp ls 1, \
-     'data/best_fit_small.dat' u 1:3 t 'Best fit' w lp ls 2
-     # 'data/system_malloc_small.dat' u 1:2 t 'System' w lp ls 3
+     'data/best_fit_small.dat' u 1:3 t 'Best fit' w lp ls 2, \
+     'data/system_malloc_small.dat' u 1:3 t 'System' w lp ls 3
 
 show output
 
@@ -53,8 +53,8 @@ set output 'data/memory_plot_big.png'
 
 # memory plot
 plot 'data/first_fit_big.dat' u 1:2 t 'First fit' w lp ls 1, \
-     'data/best_fit_big.dat' u 1:2 t 'Best fit' w lp ls 2
-     # 'data/system_malloc_big.dat' u 1:2 t 'System' w lp ls 3
+     'data/best_fit_big.dat' u 1:2 t 'Best fit' w lp ls 2, \
+     'data/system_malloc_big.dat' u 1:2 t 'System' w lp ls 3
 
 show output
 
@@ -63,7 +63,7 @@ set output 'data/time_plot_big.png'
 
 # time plot
 plot 'data/first_fit_big.dat' u 1:3 t 'First fit' w lp ls 1, \
-     'data/best_fit_big.dat' u 1:3 t 'Best fit' w lp ls 2
-     # 'data/system_malloc_big.dat' u 1:2 t 'System' w lp ls 3
+     'data/best_fit_big.dat' u 1:3 t 'Best fit' w lp ls 2, \
+     'data/system_malloc_big.dat' u 1:3 t 'System' w lp ls 3
 
 show output

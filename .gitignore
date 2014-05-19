@@ -3,6 +3,10 @@ malloc
 .DS_Store
 
 # test files
+data/
+testing/malloc.c
+testing/malloc.h
+*.in
 malloc_test
 *.dat
 *.png
