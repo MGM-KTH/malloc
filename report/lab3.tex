@@ -25,6 +25,7 @@
 \usepackage[english]{babel} % English language/hyphenation
 \usepackage{amsmath,amsfonts,amsthm} % Math packages
 
+\usepackage{verbatim}
 \usepackage[utf8]{inputenc} % Needed to support swedish "åäö" chars
 \usepackage{titling} % Used to re-style maketitle
 \usepackage{enumerate}
@@ -83,10 +84,9 @@
 \section{Inledning}
 
 % OBS! Se till så att filerna är läsbara för assistenterna (se 3.4 ).
-Koden finns tillgänglig i följande sökväg:\\
-|/afs/ict.kth.se/home/m/r/mrunelov/os/lab3/|\\
+Koden finns tillgänglig i följande sökväg: |/afs/ict.kth.se/home/m/r/mrunelov/os/lab3/|,
 
-samt i appendix.
+samt i appendix. Körinstruktioner finns i filen README.txt
 
 
 % Verksamhetsberättelse och synpunkter på laborationen. Beskriv arbetets utveckling. Hade du problem med verktygen,
@@ -98,26 +98,63 @@ samt i appendix.
 
 
 \subsection{Synpunkter}
+gprof fungerar inte längre på Mac OS X, och skolans datorer ger en inte tillräckligt med minne för att göra utförliga tester med gprof. Dessutom skulle vi uppskatta om det fanns ett tydligt exempel på gprof-användning då detta
+har en tendens att vara krångligt.\\
 
-% jag hatar gprof och om ni vill att man ska använda det borde ni visa hur det funkar 
-% eftersom det aldrig funkar som det ska. Och skolans datorer ger för lite minne för att köra det...
+Det är lite förvirrande att systemets malloc har någon optimering som gör att minnesåtgången blir 0 i alla tester. 
+Detta kanske inte gäller alla system, men det borde kanske nämnas i labbpeket för att göra folk beredda på det.\\
 
+Testfilerna är väldigt otydliga med huruvida man har klarat ett test eller inte. Om man kollar i källkoden kan man
+oftast räkna ut vad som menas, men det borde inte behövas.
+Precis som MERGE-testet borde samtliga tester avslutas med antingen |Test passed OK| eller |Test failed|.
+En sådan text per deltest vore ännu bättre. 
 
+Det är också förvirrande med texten |worst case calculation| i MEMORY-testet. Det verkar som att $> 2.0*\text{worst-case}$ 
+anses vara ett misslyckande, men man får lätt intrycket att man ska ligga $< 1.0$.
 
 
 \section{Förberedelsefrågor}
+
 \begin{enumerate}[1)]
-\item 
-\emph{}
+\item{mmap:}
+
+Adress-parametern till |mmap| specificerar en virtuell adress som är ett förslag till var |mmap| ska skapa en ny mappning.
+|mmap| kommer att skapa en mappning på en närliggande sida.
+
+Om adressen är |NULL| väljer kerneln adress.\\
+
+|mmap| returnerar en pekare till det mappade området, eller |MAP_FAILED| om mappningen misslyckades.\\
+
+Man måste specificera någon av flaggorna |MAP_SHARED| eller |MAP_PRIVATE|. |MAP_SHARED| innebär att
+uppdateringar av mappningen är synlig för andra processer som har samma mappning. |MAP_PRIVATE| skapar en privat copy-on-write-mappning.
 \end{enumerate}
 
 %------------------------------------------------------------------------------
 \section{Problembeskrivning}
 
 
+%------------------------------------------------------------------------------
+\section{Programbeskrivning}
+
+% Har nästan förstått det här. Men är lite osäker på vad dom vill.
+% Det nedan + motsvarande förberedelsefrågor-del kan ses som anteckningar tills vidare...
+%
+% Det är lite oklart hur det hela ska funka.
+% sbrk ger oss program break, men __endHeap med mmap håller bara reda på 
+% mängden mappat minne. Den bryr sig inte om luckor osv. Se request_memory.
+%
+Om |MMAP| är definierad deklareras en variabel |__endHeap| samt funktionen 
+|void *endHeap(void)| som initialiserar |__endHeap| om den är |NULL| och returnerar |__endHeap|.\\
+
+|__endHeap| används som adress-parameter när |malloc| begär mer minne av operativsystemet via |request_memory|.
+
+
+
 
 %------------------------------------------------------------------------------
 \section{Resultat}
+
+% bilder + förklaringar!
 
 % Measurements from "Instruments" time profiler, Mac OS X.
 % Fills an array of size 256, 10 000 times with the specified block size
@@ -137,11 +174,17 @@ samt i appendix.
 %------------------------------------------------------------------------------
 \section{Diskussion}
 
-
+% synd att man inte kan mäta minne i system-malloc.
 
 %------------------------------------------------------------------------------
 \newpage
 \section*{Appendix}
+\subsection*{malloc.c}
+\verbatiminput{../malloc.c}
+
+\newpage
+\subsection*{malloc.h}
+\verbatiminput{../malloc.h}
 
 
 \end{document}

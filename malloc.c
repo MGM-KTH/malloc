@@ -29,11 +29,11 @@
 #define MIN_ALLOC 64 /* minimum number of units to request */
 
 #ifdef MMAP
-static void *__endHeap = 0;
+static void *__endHeap = NULL;
 
 void *endHeap(void)
 {
-    if(__endHeap == 0) __endHeap = sbrk(0);
+    if(__endHeap == NULL) __endHeap = sbrk(0);
     return __endHeap;
 }
 #endif
@@ -61,34 +61,26 @@ union header {
 
 typedef union header header; /* skip the union keyword */
 
-static header head; /* head of linked list of allocated memory */
 static header *free_list = NULL;
+static header base; /* empty base header for free_list */
 
 
 static header *request_memory(unsigned naligned) {
 	void *cp;
 	header *up;
 
-#ifdef MMAP
-	unsigned noPages;
-	if(__endHeap == 0) __endHeap = sbrk(0);
-#endif
-    
-    /*if(naligned < MIN_ALLOC) {
-        if(naligned > MIN_ALLOC/8) {
-            naligned = MIN_ALLOC;
-        }
-    }*/
-    
+    unsigned pagesize = getpagesize();
+
 	if(naligned < MIN_ALLOC) naligned = MIN_ALLOC;
 
 #ifdef MMAP
-	noPages = ((naligned*sizeof(header))-1)/getpagesize() + 1;
+    unsigned noPages;
+	noPages = ((naligned*sizeof(header))-1)/pagesize + 1;
     if(noPages > 10) noPages *= 16; /* assume more large blocks follow */
-	cp = mmap(__endHeap, noPages*getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-    /*cp = mmap(0, noPages*getpagesize(), PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);*/
-	naligned = (noPages*getpagesize())/sizeof(header);
-	__endHeap += noPages*getpagesize();
+	cp = mmap(__endHeap, noPages*pagesize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+	naligned = (noPages*pagesize)/sizeof(header);
+    if (cp != MAP_FAILED)
+        __endHeap += noPages*pagesize; /* increase total amount of allocations */
 #else
 	cp = sbrk(naligned*sizeof(header));
 #endif
@@ -101,7 +93,6 @@ static header *request_memory(unsigned naligned) {
 	free((void *)(up+1));
 	return free_list;
 }
-
 
 
 /* malloc implementations: */
@@ -118,9 +109,9 @@ void *malloc(size_t nbytes) {
 	unsigned naligned = (nbytes+sizeof(header)-1)/sizeof(header) + 1; 
 
 	if (free_list == NULL) { /* initialize free_list */
-		free_list = &head;
-		head.block.next = free_list;
-		head.block.size = 0;
+		free_list = &base;
+		base.block.next = free_list;
+		base.block.size = 0;
 	}
 
 	/* loop free_list looking for memory */
@@ -159,9 +150,9 @@ void *malloc(size_t nbytes) {
     unsigned naligned = (nbytes+sizeof(header)-1)/sizeof(header) + 1; /* number of aligned units needed for nbytes bytes */
 
     if (free_list == NULL) { /* initialize free_list */
-        free_list = &head;
-        head.block.next = free_list;
-        head.block.size = 0;
+        free_list = &base;
+        base.block.next = free_list;
+        base.block.size = 0;
     }
 
     /* loop free_list looking for memory */
@@ -304,6 +295,18 @@ void reset_free_list() {
 
 #if LOCAL
 int main() {
+
+    /* requesting one page of memory using mmap */
+    void *m = mmap(0, getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    assert((unsigned)m != MAP_FAILED);
+    void *s = sbrk(0);
+    fprintf(stderr, "mmap: %u\n", (unsigned)(m));
+    fprintf(stderr, "sbrk: %u\n", (unsigned)(s));
+    fprintf(stderr, "%u\n", (unsigned)(s-m));
+    assert((unsigned)(s-m) % getpagesize() == 0);
+
+
+
     void *p, *memory_start, *memory_end;
 
     memory_start = endHeap();

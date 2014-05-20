@@ -28,10 +28,10 @@ set output 'data/memory_plot_small.png'
 #
 
 # memory plot
-plot 'data/first_fit_small.dat' u 1:2 t 'First fit' w lp ls 1, \
-     'data/best_fit_small.dat' u 1:2 t 'Best fit' w lp ls 2, \
-     'data/worst_fit_small.dat' u 1:2 t 'Worst fit' w lp ls 4
-     #'data/system_malloc_small.dat' u 1:2 t 'System' w lp ls 3, \
+plot 'data/first_fit_small.dat' u (log($1)):2:xtic(1) t 'First fit' w lp ls 1, \
+     'data/best_fit_small.dat' u (log($1)):2:xtic(1) t 'Best fit' w lp ls 2, \
+     'data/worst_fit_small.dat' u (log($1)):2:xtic(1) t 'Worst fit' w lp ls 4
+     #'data/system_malloc_small.dat' u (log($1)):2:xtic(1) t 'System' w lp ls 3, \
 
 show output
 
@@ -40,10 +40,10 @@ set key top right
 set output 'data/time_plot_small.png'
 
 # time plot
-plot 'data/first_fit_small.dat' u 1:3 t 'First fit' w lp ls 1, \
-     'data/best_fit_small.dat' u 1:3 t 'Best fit' w lp ls 2, \
-     'data/system_malloc_small.dat' u 1:3 t 'System' w lp ls 3, \
-     'data/worst_fit_small.dat' u 1:3 t 'Worst fit' w lp ls 4, \
+plot 'data/first_fit_small.dat' u (log($1)):3:xtic(1) t 'First fit' w lp ls 1, \
+     'data/best_fit_small.dat' u (log($1)):3:xtic(1) t 'Best fit' w lp ls 2, \
+     'data/system_malloc_small.dat' u (log($1)):3:xtic(1) t 'System' w lp ls 3, \
+     'data/worst_fit_small.dat' u (log($1)):3:xtic(1) t 'Worst fit' w lp ls 4, \
 
 show output
 
@@ -58,10 +58,10 @@ set key top left
 set output 'data/memory_plot_big.png'
 
 # memory plot
-plot 'data/first_fit_big.dat' u 1:2 t 'First fit' w lp ls 1, \
-     'data/best_fit_big.dat' u 1:2 t 'Best fit' w lp ls 2, \
-     'data/worst_fit_big.dat' u 1:2 t 'Worst fit' w lp ls 4
-     #'data/system_malloc_big.dat' u 1:2 t 'System' w lp ls 3, \
+plot 'data/first_fit_big.dat' u (log($1)):2:xtic(1) t 'First fit' w lp ls 1, \
+     'data/best_fit_big.dat' u (log($1)):2:xtic(1) t 'Best fit' w lp ls 2, \
+     'data/worst_fit_big.dat' u (log($1)):2:xtic(1) t 'Worst fit' w lp ls 4
+     #'data/system_malloc_big.dat' u (log($1)):2:xtic(1) t 'System' w lp ls 3, \
 
 show output
 
@@ -69,9 +69,9 @@ set ylabel 'milliseconds'
 set output 'data/time_plot_big.png'
 
 # time plot
-plot 'data/first_fit_big.dat' u 1:3 t 'First fit' w lp ls 1, \
-     'data/best_fit_big.dat' u 1:3 t 'Best fit' w lp ls 2, \
-     'data/system_malloc_big.dat' u 1:3 t 'System' w lp ls 3, \
-     'data/worst_fit_big.dat' u 1:3 t 'Worst fit' w lp ls 4, \
+plot 'data/first_fit_big.dat' u (log($1)):3:xtic(1) t 'First fit' w lp ls 1, \
+     'data/best_fit_big.dat' u (log($1)):3:xtic(1) t 'Best fit' w lp ls 2, \
+     'data/system_malloc_big.dat' u (log($1)):3:xtic(1) t 'System' w lp ls 3, \
+     'data/worst_fit_big.dat' u (log($1)):3:xtic(1) t 'Worst fit' w lp ls 4, \
 
 show output
