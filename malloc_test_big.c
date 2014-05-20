@@ -18,8 +18,6 @@ int main(int argc, char * argv[]){
 
         memory_start = endHeap();
 
-        clock_t start = clock(), diff;
-
         for (i = 0; i < LOOPS; ++i) {
             for (j = 0; j < SIZE; ++j) {
                 a[j] = malloc(pages*getpagesize());
@@ -28,15 +26,12 @@ int main(int argc, char * argv[]){
         
         memory_end = endHeap();
 
-        diff = clock() - start;
-        int msec = diff * 1000 / CLOCKS_PER_SEC;
-
         for(j = 0; j < SIZE; j++){
             free(a[j]);
         }
 
         /* block size, memory and time */
-        fprintf(stdout,"%u %u %d\n", pages*getpagesize(),(unsigned)(memory_end - memory_start)/1000, msec);
+        fprintf(stdout,"%u %u\n", pages*getpagesize(),(unsigned)(memory_end - memory_start)/1000);
 
 #ifndef SYSTEM
         reset_free_list();
