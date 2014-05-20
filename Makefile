@@ -6,7 +6,7 @@ BIN = bestfit_small bestfit_big firstfit_small firstfit_big \
  	  system_malloc_small system_malloc_big \
  	  worstfit_small worstfit_big
 
-CC = GCC
+CC = gcc
 CFLAGS	=  -g -w -ansi
 
 all: $(BIN)
@@ -56,4 +56,4 @@ malloc_test_big.o:
 	$(CC) $(CFLAGS) -c malloc_test_big.c 
 
 clean: 
-	rm -f *.o $(BIN) malloc
+	rm -f *.o $(BIN)
