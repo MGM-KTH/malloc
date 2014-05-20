@@ -2,12 +2,11 @@
 #include "brk.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/types.h>
 #include <unistd.h>
 #include <time.h>
 
-#define SIZE 512
-#define LOOPS 2000 /* many loops for small data */
+#define SIZE 128
+#define LOOPS 4000 /* many loops for small data */
 
 int main(int argc, char * argv[]){
     unsigned memory_size;

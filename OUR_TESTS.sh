@@ -1,42 +1,35 @@
 make clean > /dev/null 2>&1
+make > /dev/null 2>&1
+
+
 echo "RUNNING TESTS ON SMALL DATA"
-gcc -c -w -DSTRATEGY=2 malloc.c
-gcc -c -w malloc_test_small.c
-gcc -o malloc_test *.o
+
+echo "RUNNING WORST FIT..."
+./worstfit_small < data/test_data_small.in 2> data/worst_fit_small.dat
+
 echo "RUNNING BEST FIT..."
-./malloc_test < data/test_data_small.in 2> data/best_fit_small.dat
+./bestfit_small < data/test_data_small.in 2> data/best_fit_small.dat
 
-gcc -c -w -DSTRATEGY=1 malloc.c
-gcc -c -w malloc_test_small.c
-gcc -o malloc_test *.o
 echo "RUNNING FIRST FIT..."
-./malloc_test < data/test_data_small.in 2> data/first_fit_small.dat
+./firstfit_small < data/test_data_small.in 2> data/first_fit_small.dat
 
-gcc -c -w -DSTRATEGY=0 malloc.c
-gcc -c -w malloc_test_small.c
-gcc -o malloc_test *.o
 echo "RUNNING System malloc..."
-./malloc_test < data/test_data_small.in 2> data/system_malloc_small.dat
+./system_malloc_small < data/test_data_small.in 2> data/system_malloc_small.dat
+
 
 echo "RUNNING TESTS ON BIGGER DATA"
-make clean > /dev/null 2>&1
-gcc -c -w -DSTRATEGY=2 malloc.c
-gcc -c -w malloc_test_big.c
-gcc -o malloc_test *.o
+
+echo "RUNNING WORST FIT..."
+./worstfit_big < data/test_data_big.in 2> data/worst_fit_big.dat
+
 echo "RUNNING BEST FIT..."
-./malloc_test < data/test_data_big.in 2> data/best_fit_big.dat
+./bestfit_big < data/test_data_big.in 2> data/best_fit_big.dat
 
-gcc -c -w -DSTRATEGY=1 malloc.c
-gcc -c -w malloc_test_big.c
-gcc -o malloc_test *.o
 echo "RUNNING FIRST FIT..."
-./malloc_test < data/test_data_big.in 2> data/first_fit_big.dat
+./firstfit_big < data/test_data_big.in 2> data/first_fit_big.dat
 
-gcc -c -w -DSTRATEGY=0 malloc.c
-gcc -c -w malloc_test_big.c
-gcc -o malloc_test *.o
 echo "RUNNING System malloc..."
-./malloc_test < data/test_data_big.in 2> data/system_malloc_big.dat
+./system_malloc_big < data/test_data_big.in 2> data/system_malloc_big.dat
 
 
 ./gnu_plot.sh

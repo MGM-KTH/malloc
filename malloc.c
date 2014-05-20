@@ -65,45 +65,6 @@ static header head; /* head of linked list of allocated memory */
 static header *free_list = NULL;
 
 
-
-#if LOCAL
-int main() {
-    void *p, *memory_start, *memory_end;
-
-    memory_start = endHeap();
-
-    p = malloc(1);
-    p = malloc(1024);
-    p = malloc(1024);
-    p = malloc(2048);
-
-    memory_end = endHeap();
-
-    fprintf(stderr, "Memory used: %u\n", (unsigned)(memory_end - memory_start));
-    fprintf(stderr, "(Should be 8192 with a page size of 4096)\n");
-
-    /* detta skall fungera korrekt */ 
-    p = malloc(0);
-    free(p);
-    free(NULL);
-    /* detta skall ge tillbaka p == NULL */
-    struct rlimit r;
-    getrlimit(RLIMIT_DATA, &r);
-    p = malloc(2 * r.rlim_max);
-    assert(p == NULL);
-    /* och dessa? */
-    p = realloc(NULL, 17); 
-    assert(p != NULL); /* as malloc 17 */
-    p = realloc(p, 0);
-    assert(p == NULL); /* as free, returns null */
-    p = realloc(NULL, 0);
-    assert(p == NULL); /* empty free */
-
-    return 0;
-}
-#endif
-
-
 static header *request_memory(unsigned naligned) {
 	void *cp;
 	header *up;
@@ -142,14 +103,8 @@ static header *request_memory(unsigned naligned) {
 }
 
 
+
 /* malloc implementations: */
-
-
-#if STRATEGY == QUICK_FIT
-void *malloc(size_t nbytes) {
-    return NULL;
-}
-#endif
 
 
 #if STRATEGY == FIRST_FIT
@@ -171,7 +126,7 @@ void *malloc(size_t nbytes) {
 	/* loop free_list looking for memory */
 	prev_h = free_list;
 	h = prev_h->block.next;
-	while(1) {
+	for (h = prev_h->block.next; ; prev_h = h, h = h->block.next) {
 		if(h->block.size >= naligned) {
 			if (h->block.size == naligned) { /* found perfect block! */
                 prev_h->block.next = h->block.next; /* unlink h */
@@ -188,13 +143,13 @@ void *malloc(size_t nbytes) {
 			h = request_memory(naligned); /* request more heap space */
 			if (h == NULL) return NULL; /* no memory left */
 		}
-		prev_h = h;
-		h = h->block.next;
+		/*prev_h = h;
+		h = h->block.next;*/
 	}
 }
 #endif
 
-#if STRATEGY == BEST_FIT
+#if STRATEGY == BEST_FIT || STRATEGY == WORST_FIT
 void *malloc(size_t nbytes) {
     if(nbytes == 0) return NULL;
     if(nbytes >= ULONG_MAX - sizeof(header)) return NULL; /* overflow */
@@ -213,6 +168,7 @@ void *malloc(size_t nbytes) {
     prev_h = free_list;
     h = prev_h->block.next;
     while(1) {
+#if STRATEGY == BEST_FIT
         if(h->block.size >= naligned) {
             if(best == NULL || h->block.size < best->block.size) {
                 best = h;
@@ -221,6 +177,15 @@ void *malloc(size_t nbytes) {
             if (best->block.size == naligned) /* perfect match */
                 break;
         }
+#endif
+#if STRATEGY == WORST_FIT
+        if(h->block.size >= naligned) {
+            if(best == NULL || h->block.size > best->block.size) {
+                best = h;
+                prev_best = prev_h;
+            }
+        }
+#endif
         if(h == free_list) { /* wrapped around */
             if (best != NULL) /* block found */
                 break;
@@ -335,5 +300,44 @@ void *realloc(void *block, size_t nbytes) {
 void reset_free_list() {
     free_list = NULL;
 }
+
+
+#if LOCAL
+int main() {
+    void *p, *memory_start, *memory_end;
+
+    memory_start = endHeap();
+
+    p = malloc(1);
+    p = malloc(1024);
+    p = malloc(1024);
+    p = malloc(2048);
+
+    memory_end = endHeap();
+
+    fprintf(stderr, "Memory used: %u\n", (unsigned)(memory_end - memory_start));
+    fprintf(stderr, "(Should be 8192 with a page size of 4096 if MIN_ALLOC low enough)\n");
+
+    /* detta skall fungera korrekt */
+    p = malloc(0);
+    free(p);
+    free(NULL);
+    /* detta skall ge tillbaka p == NULL */
+    struct rlimit r;
+    getrlimit(RLIMIT_DATA, &r);
+    p = malloc(2 * r.rlim_max);
+    assert(p == NULL);
+    /* och dessa? */
+    p = realloc(NULL, 17); 
+    assert(p != NULL); /* as malloc 17 */
+    p = realloc(p, 0);
+    assert(p == NULL); /* as free, returns null */
+    p = realloc(NULL, 0);
+    assert(p == NULL); /* empty free */
+
+    return 0;
+}
+#endif
+
 
 #endif
