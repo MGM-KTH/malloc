@@ -8,6 +8,14 @@ testing/malloc.c
 testing/malloc.h
 *.in
 malloc_test
+bestfit_big
+bestfit_small
+firstfit_big
+firstfit_small
+system_malloc_big
+system_malloc_small
+worstfit_big
+worstfit_small
 *.dat
 *.png
 t0
