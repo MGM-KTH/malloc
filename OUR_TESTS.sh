@@ -5,13 +5,13 @@ make > /dev/null 2>&1
 echo "RUNNING TESTS ON SMALL DATA"
 
 echo "RUNNING WORST FIT..."
-./worstfit_small < data/test_data_small.in > data/worst_fit_small.dat
+./worstfit_small < data/test_data_small.in > data/worstfit_small.dat
 
 echo "RUNNING BEST FIT..."
-./bestfit_small < data/test_data_small.in > data/best_fit_small.dat
+./bestfit_small < data/test_data_small.in > data/bestfit_small.dat
 
 echo "RUNNING FIRST FIT..."
-./firstfit_small < data/test_data_small.in > data/first_fit_small.dat
+./firstfit_small < data/test_data_small.in > data/firstfit_small.dat
 
 echo "RUNNING System malloc..."
 ./system_malloc_small < data/test_data_small.in > data/system_malloc_small.dat
@@ -20,13 +20,13 @@ echo "RUNNING System malloc..."
 echo "RUNNING TESTS ON BIGGER DATA"
 
 echo "RUNNING WORST FIT..."
-./worstfit_big < data/test_data_big.in > data/worst_fit_big.dat
+./worstfit_big < data/test_data_big.in > data/worstfit_big.dat
 
 echo "RUNNING BEST FIT..."
-./bestfit_big < data/test_data_big.in > data/best_fit_big.dat
+./bestfit_big < data/test_data_big.in > data/bestfit_big.dat
 
 echo "RUNNING FIRST FIT..."
-./firstfit_big < data/test_data_big.in > data/first_fit_big.dat
+./firstfit_big < data/test_data_big.in > data/firstfit_big.dat
 
 echo "RUNNING System malloc..."
 ./system_malloc_big < data/test_data_big.in > data/system_malloc_big.dat
