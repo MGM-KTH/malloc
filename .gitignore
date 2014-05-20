@@ -3,7 +3,7 @@ malloc
 .DS_Store
 
 # test files
-data/
+data/*.dat
 testing/malloc.c
 testing/malloc.h
 *.in
