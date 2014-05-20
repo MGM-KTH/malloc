@@ -38,7 +38,7 @@ int main(int argc, char * argv[]){
         /* block size, memory and time */
         fprintf(stdout,"%u %u %d\n", pages*getpagesize(),(unsigned)(memory_end - memory_start)/1000, msec);
 
-#if STRATEGY != SYSTEM_MALLOC
+#ifndef SYSTEM
         reset_free_list();
 #endif        
 

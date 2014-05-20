@@ -1,13 +1,3 @@
-#define SYSTEM_MALLOC 0
-#define FIRST_FIT 1
-#define BEST_FIT 2
-#define WORST_FIT 3
-#define QUICK_FIT 4
-
-#ifndef STRATEGY
-#define STRATEGY BEST_FIT /* default: best fit */
-#endif
-
 #define _GNU_SOURCE
 
 #ifndef MAP_ANONYMOUS
@@ -38,6 +28,9 @@ void *endHeap(void)
 }
 #endif
 
+#ifndef STRATEGY
+#define STRATEGY BEST_FIT /* default: best fit */
+#endif
 
 #if STRATEGY != SYSTEM_MALLOC
 
@@ -295,6 +288,22 @@ void *realloc(void *block, size_t nbytes)
 
 void reset_free_list()
 {
+	header *h = free_list->block.next, *next_h;
+
+	do {
+		/* Save the pointer to the next free space */
+		next_h = h->block.next;
+
+		/* Unmap the space which the current header belongs to */
+		munmap(h, h->block.size);
+
+	}while(free_list != (h = next_h));
+
+	/* Unmap free_list last since we have now looped through
+ 	 * the entire list and know there are no others
+ 	 */
+	munmap(free_list, free_list->block.size);
+
 	free_list = NULL;
 }
 
