@@ -33,8 +33,8 @@ static void *__endHeap = NULL;
 
 void *endHeap(void)
 {
-    if(__endHeap == NULL) __endHeap = sbrk(0);
-    return __endHeap;
+	if(__endHeap == NULL) __endHeap = sbrk(0);
+	return __endHeap;
 }
 #endif
 
@@ -65,29 +65,30 @@ static header *free_list = NULL;
 static header base; /* empty base header for free_list */
 
 
-static header *request_memory(unsigned naligned) {
+static header *request_memory(unsigned naligned)
+{
 	void *cp;
 	header *up;
 
-    unsigned pagesize = getpagesize();
+	unsigned pagesize = getpagesize();
 
 	if(naligned < MIN_ALLOC) naligned = MIN_ALLOC;
 
 #ifdef MMAP
-    unsigned noPages;
+	unsigned noPages;
 	noPages = ((naligned*sizeof(header))-1)/pagesize + 1;
-    if(noPages > 10) noPages *= 16; /* assume more large blocks follow */
+	if(noPages > 10) noPages *= 16; /* assume more large blocks follow */
 	cp = mmap(__endHeap, noPages*pagesize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 	naligned = (noPages*pagesize)/sizeof(header);
-    if (cp != MAP_FAILED)
-        __endHeap += noPages*pagesize; /* increase total amount of allocations */
+	if (cp != MAP_FAILED)
+		__endHeap += noPages*pagesize; /* increase total amount of allocations */
 #else
 	cp = sbrk(naligned*sizeof(header));
 #endif
-    if(cp == (void *) -1){ /* no space at all */
-        perror("failed to get more memory");
-        return NULL;
-    }
+	if(cp == (void *) -1){ /* no space at all */
+		perror("failed to get more memory");
+		return NULL;
+	}
 	up = (header *) cp;
 	up->block.size = naligned;
 	free((void *)(up+1));
@@ -99,9 +100,10 @@ static header *request_memory(unsigned naligned) {
 
 
 #if STRATEGY == FIRST_FIT
-void *malloc(size_t nbytes) {
+void *malloc(size_t nbytes)
+{
 	if (nbytes == 0) return NULL;
-    if(nbytes >= ULONG_MAX - sizeof(header)) return NULL; /* overflow */
+	if(nbytes >= ULONG_MAX - sizeof(header)) return NULL; /* overflow */
 
 	header *h, *prev_h;
 
@@ -120,11 +122,11 @@ void *malloc(size_t nbytes) {
 	for (h = prev_h->block.next; ; prev_h = h, h = h->block.next) {
 		if(h->block.size >= naligned) {
 			if (h->block.size == naligned) { /* found perfect block! */
-                prev_h->block.next = h->block.next; /* unlink h */
+				prev_h->block.next = h->block.next; /* unlink h */
 			}else { /* bigger. allocate tail */
-                h->block.size -= naligned;
-                h += h->block.size;
-                h->block.size = naligned;
+				h->block.size -= naligned;
+				h += h->block.size;
+				h->block.size = naligned;
 			}
 			free_list = prev_h;
 			return (void *) (h + 1); /* return start of block */
@@ -141,61 +143,62 @@ void *malloc(size_t nbytes) {
 #endif
 
 #if STRATEGY == BEST_FIT || STRATEGY == WORST_FIT
-void *malloc(size_t nbytes) {
-    if(nbytes == 0) return NULL;
-    if(nbytes >= ULONG_MAX - sizeof(header)) return NULL; /* overflow */
+void *malloc(size_t nbytes)
+{
+	if(nbytes == 0) return NULL;
+	if(nbytes >= ULONG_MAX - sizeof(header)) return NULL; /* overflow */
 
-    header *h, *prev_h, *best = NULL, *prev_best = NULL;
-    unsigned threshold = sizeof(header);
-    unsigned naligned = (nbytes+sizeof(header)-1)/sizeof(header) + 1; /* number of aligned units needed for nbytes bytes */
+	header *h, *prev_h, *best = NULL, *prev_best = NULL;
+	unsigned threshold = sizeof(header);
+	unsigned naligned = (nbytes+sizeof(header)-1)/sizeof(header) + 1; /* number of aligned units needed for nbytes bytes */
 
-    if (free_list == NULL) { /* initialize free_list */
-        free_list = &base;
-        base.block.next = free_list;
-        base.block.size = 0;
-    }
+	if (free_list == NULL) { /* initialize free_list */
+		free_list = &base;
+		base.block.next = free_list;
+		base.block.size = 0;
+	}
 
-    /* loop free_list looking for memory */
-    prev_h = free_list;
-    h = prev_h->block.next;
-    while(1) {
+	/* loop free_list looking for memory */
+	prev_h = free_list;
+	h = prev_h->block.next;
+	while(1) {
 #if STRATEGY == BEST_FIT
-        if(h->block.size >= naligned) {
-            if(best == NULL || h->block.size < best->block.size) {
-                best = h;
-                prev_best = prev_h;
-            }
-            if (best->block.size == naligned) /* perfect match */
-                break;
-        }
+		if(h->block.size >= naligned) {
+			if(best == NULL || h->block.size < best->block.size) {
+				best = h;
+				prev_best = prev_h;
+			}
+			if (best->block.size == naligned) /* perfect match */
+				break;
+		}
 #endif
 #if STRATEGY == WORST_FIT
-        if(h->block.size >= naligned) {
-            if(best == NULL || h->block.size > best->block.size) {
-                best = h;
-                prev_best = prev_h;
-            }
-        }
+		if(h->block.size >= naligned) {
+			if(best == NULL || h->block.size > best->block.size) {
+				best = h;
+				prev_best = prev_h;
+			}
+		}
 #endif
-        if(h == free_list) { /* wrapped around */
-            if (best != NULL) /* block found */
-                break;
-            h = request_memory(naligned); /* request more heap space */
-            if (h == NULL) return NULL; /* no memory left */
-        }
-        prev_h = h;
-        h = h->block.next;
-        
-    }
-    if(best->block.size <= naligned + threshold) { /* found perfect block! */
-        prev_best->block.next = best->block.next; /* unlink best */
-    }else {
-        best->block.size -= naligned;
-        best += best->block.size;
-        best->block.size = naligned;
-    }
-    free_list = prev_best;
-    return (void *) (best+1); /* return start of block */        
+		if(h == free_list) { /* wrapped around */
+			if (best != NULL) /* block found */
+				break;
+			h = request_memory(naligned); /* request more heap space */
+			if (h == NULL) return NULL; /* no memory left */
+		}
+		prev_h = h;
+		h = h->block.next;
+
+	}
+	if(best->block.size <= naligned + threshold) { /* found perfect block! */
+		prev_best->block.next = best->block.next; /* unlink best */
+	}else {
+		best->block.size -= naligned;
+		best += best->block.size;
+		best->block.size = naligned;
+	}
+	free_list = prev_best;
+	return (void *) (best+1); /* return start of block */        
 }
 #endif
 
@@ -203,7 +206,8 @@ void *malloc(size_t nbytes) {
 /*
  * Free the memory beginning at address block
  */
-void free(void *block) {
+void free(void *block)
+{
 	header *bh, *h; /* block header and loop variable */
 
 	if(block == NULL) return; /* Nothing to do */
@@ -211,31 +215,32 @@ void free(void *block) {
 	bh = (header *) block - 1; /* point to block header */
 	h = free_list;
 
-    /*for(h = free_list; !(bh > h && bh < h->block.next); h = h->block.next) {*/
-    while(!(bh > h && bh < h->block.next)) {
-        if(h >= h->block.next && (bh > h || bh < h->block.next))
-            break; /* freed block at start or end of arena */
-        h = h->block.next;
-    }
+	/*for(h = free_list; !(bh > h && bh < h->block.next); h = h->block.next) {*/
+	while(!(bh > h && bh < h->block.next)) {
+		if(h >= h->block.next && (bh > h || bh < h->block.next))
+			break; /* freed block at start or end of arena */
+		h = h->block.next;
+	}
 
-    if(bh + bh->block.size == h->block.next) { /* join to upper nb */
-        bh->block.size += h->block.next->block.size;
-        bh->block.next = h->block.next->block.next;
-    }else
-        bh->block.next = h->block.next;
-    if(h + h->block.size == bh) { /* join to lower nbr */
-        h->block.size += bh->block.size;
-        h->block.next = bh->block.next;
-    }else
-        h->block.next = bh;
-    free_list = h;
+	if(bh + bh->block.size == h->block.next) { /* join to upper nb */
+		bh->block.size += h->block.next->block.size;
+		bh->block.next = h->block.next->block.next;
+	}else
+		bh->block.next = h->block.next;
+	if(h + h->block.size == bh) { /* join to lower nbr */
+		h->block.size += bh->block.size;
+		h->block.next = bh->block.next;
+	}else
+		h->block.next = bh;
+	free_list = h;
 }
 
 /*
  * Shrink or grow the memory area beginning at adress block,
  * move memory area if necessary
  */
-void *realloc(void *block, size_t nbytes) {
+void *realloc(void *block, size_t nbytes)
+{
 	if(block == NULL) { /* If block ptr is NULL, behave as malloc */
 		return malloc(nbytes);
 	}else if( 0 == nbytes ) { /* If size is 0 and ptr!=NULL, behave as free */
@@ -260,8 +265,8 @@ void *realloc(void *block, size_t nbytes) {
 		/* Lazy implementation */
 		/* Allocate new memory */
 		void *new_area = malloc(nbytes);
-        if (new_area == NULL) /* malloc failed */
-            return NULL;
+		if (new_area == NULL) /* malloc failed */
+			return NULL;
 
 		/* Copy data from old block to new area */
 		memcpy(new_area, block, (bh->block.size-1)*sizeof(header));
@@ -288,57 +293,59 @@ void *realloc(void *block, size_t nbytes) {
 	return NULL;
 }
 
-void reset_free_list() {
-    free_list = NULL;
+void reset_free_list()
+{
+	free_list = NULL;
 }
 
 
 #if LOCAL
-int main() {
+int main()
+{
 
-    /* requesting one page of memory using mmap */
-    void *m = mmap(0, getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-    assert((unsigned)m != MAP_FAILED);
-    void *s = sbrk(0);
-    fprintf(stderr, "mmap: %u\n", (unsigned)(m));
-    fprintf(stderr, "sbrk: %u\n", (unsigned)(s));
-    fprintf(stderr, "%u\n", (unsigned)(s-m));
-    assert((unsigned)(s-m) % getpagesize() == 0);
+	/* requesting one page of memory using mmap */
+	void *m = mmap(0, getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+	assert((unsigned)m != MAP_FAILED);
+	void *s = sbrk(0);
+	fprintf(stderr, "mmap: %u\n", (unsigned)(m));
+	fprintf(stderr, "sbrk: %u\n", (unsigned)(s));
+	fprintf(stderr, "%u\n", (unsigned)(s-m));
+	assert((unsigned)(s-m) % getpagesize() == 0);
 
 
 
-    void *p, *memory_start, *memory_end;
+	void *p, *memory_start, *memory_end;
 
-    memory_start = endHeap();
+	memory_start = endHeap();
 
-    p = malloc(1);
-    p = malloc(1024);
-    p = malloc(1024);
-    p = malloc(2048);
+	p = malloc(1);
+	p = malloc(1024);
+	p = malloc(1024);
+	p = malloc(2048);
 
-    memory_end = endHeap();
+	memory_end = endHeap();
 
-    fprintf(stderr, "Memory used: %u\n", (unsigned)(memory_end - memory_start));
-    fprintf(stderr, "(Should be 8192 with a page size of 4096 if MIN_ALLOC low enough)\n");
+	fprintf(stderr, "Memory used: %u\n", (unsigned)(memory_end - memory_start));
+	fprintf(stderr, "(Should be 8192 with a page size of 4096 if MIN_ALLOC low enough)\n");
 
-    /* detta skall fungera korrekt */
-    p = malloc(0);
-    free(p);
-    free(NULL);
-    /* detta skall ge tillbaka p == NULL */
-    struct rlimit r;
-    getrlimit(RLIMIT_DATA, &r);
-    p = malloc(2 * r.rlim_max);
-    assert(p == NULL);
-    /* och dessa? */
-    p = realloc(NULL, 17); 
-    assert(p != NULL); /* as malloc 17 */
-    p = realloc(p, 0);
-    assert(p == NULL); /* as free, returns null */
-    p = realloc(NULL, 0);
-    assert(p == NULL); /* empty free */
+	/* detta skall fungera korrekt */
+	p = malloc(0);
+	free(p);
+	free(NULL);
+	/* detta skall ge tillbaka p == NULL */
+	struct rlimit r;
+	getrlimit(RLIMIT_DATA, &r);
+	p = malloc(2 * r.rlim_max);
+	assert(p == NULL);
+	/* och dessa? */
+	p = realloc(NULL, 17); 
+	assert(p != NULL); /* as malloc 17 */
+	p = realloc(p, 0);
+	assert(p == NULL); /* as free, returns null */
+	p = realloc(NULL, 0);
+	assert(p == NULL); /* empty free */
 
-    return 0;
+	return 0;
 }
 #endif
 
