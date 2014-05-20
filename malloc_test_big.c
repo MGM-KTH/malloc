@@ -9,8 +9,8 @@
 #define LOOPS 20
 
 int main(int argc, char * argv[]){
-    unsigned memory_size;
-    while(scanf("%u", &memory_size) == 1) {
+    unsigned pages;
+    while(scanf("%u", &pages) == 1) {
         /*fprintf(stderr, "block size: %u, pid: %u\n", memory_size, getpid());*/ /* used with MANY_RUNS.sh */
         int i,j;
         char *a[SIZE];
@@ -22,7 +22,7 @@ int main(int argc, char * argv[]){
 
         for (i = 0; i < LOOPS; ++i) {
             for (j = 0; j < SIZE; ++j) {
-                a[j] = malloc(memory_size);
+                a[j] = malloc(pages*getpagesize());
             }
         }
         
@@ -36,7 +36,7 @@ int main(int argc, char * argv[]){
         }
 
         /* block size, memory and time */
-        fprintf(stderr,"%u %u %d\n", memory_size,(unsigned)(memory_end - memory_start)/1000, msec);
+        fprintf(stderr,"%u %u %d\n", pages*getpagesize(),(unsigned)(memory_end - memory_start)/1000, msec);
 
 #if STRATEGY != SYSTEM_MALLOC
         reset_free_list();
