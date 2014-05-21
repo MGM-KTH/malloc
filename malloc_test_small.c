@@ -5,22 +5,34 @@
 #include <unistd.h>
 #include <time.h>
 
+#ifndef SIZE /* if SIZE is defined, so is all the others */
 #define SIZE 128
-#define LOOPS 4000 /* many loops for small data */
+#define TIMES 100
+#define PAGE 0
+#endif
 
 int main(int argc, char * argv[]){
     unsigned memory_size;
     while(scanf("%u", &memory_size) == 1) {
         /*fprintf(stderr, "block size: %u, pid: %u\n", memory_size, getpid());*/ /* used with MANY_RUNS.sh */
         int i,j;
+#if PAGE
+        unsigned pagesize = getpagesize();
+#endif
         char *a[SIZE];
         void *memory_start, *memory_end;
 
         memory_start = endHeap();
 
-        for (i = 0; i < LOOPS; ++i) {
+        for (i = 0; i < TIMES; ++i) {
             for (j = 0; j < SIZE; ++j) {
-                a[j] = malloc(memory_size);
+#if PAGE
+                a[j] = malloc(memory_size*pagesize);           
+#else
+                a[j] = malloc(memory_size);                
+#endif
+
+
             }
         }
         
