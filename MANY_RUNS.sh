@@ -1,3 +1,4 @@
+#!/bin/bash
 # comment out prints in .c before running this one
 
 make clean
