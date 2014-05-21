@@ -7,7 +7,7 @@
 
 #ifndef SIZE /* if SIZE is defined, so is all the others */
 #define SIZE 128
-#define TIMES 100
+#define TIMES 10000
 #define PAGE 0
 #endif
 
