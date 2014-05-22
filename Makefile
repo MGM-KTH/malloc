@@ -8,7 +8,7 @@ LOCALBIN = bestfit_small bestfit_big firstfit_small firstfit_big \
 SYSBIN = system_malloc_small system_malloc_big system_malloc_rand
 
 CC = gcc
-CFLAGS	=  -g -w -ansi
+CFLAGS	=  -g -w -ansi -O4
 CFLAGS_SYS = ${CFLAGS} -DSYSTEM
 
 all: local system
