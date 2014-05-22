@@ -31,7 +31,7 @@ int main(int argc, char * argv[]){
         memory_start = endHeap();
 
         for(i = 0; i < TIMES; ++i) {
-            for(j = 0; j < SIZE/2; ++j) {
+            for(j = 0; j < SIZE; ++j) {
                 a[j] = malloc(pagesize*3);
             }
         }
