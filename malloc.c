@@ -20,6 +20,12 @@
 #define POSSIBLY_MALLOCED 0
 #define ONLY_MAPPED 1
 
+/*
+ * Threshold for how much larger a free block can be and still
+ * be completely consumed for a malloc.
+ */
+#define THRESH 1
+
 #ifdef MMAP
 static void *__endHeap = NULL;
 
@@ -155,61 +161,38 @@ int unregister_malloced_header(void *block) {
 	}
 }
 
-
-#if STRATEGY == FIRST_FIT
-void *malloc(size_t nbytes)
+/*
+ * Unlink a block from free_list
+ */
+void *unlink_block(header *h, header *prev_h, unsigned naligned)
 {
-	if (nbytes == 0) return NULL;
-	if(nbytes >= ULONG_MAX - sizeof(header)) return NULL; /* overflow */
-
-	header *h, *prev_h;
-
-	/* number of aligned units needed for nbytes bytes */
-	unsigned naligned = (nbytes+sizeof(header)-1)/sizeof(header) + 1; 
-
-	if (free_list == NULL) { /* initialize free_list */
-		free_list = &base;
-		base.block.next = free_list;
-		base.block.size = 0;
-	}
-
-	/* loop free_list looking for memory */
-	prev_h = free_list;
-	h = prev_h->block.next;
-	while(1) {
-	/*for (h = prev_h->block.next; ; prev_h = h, h = h->block.next) {*/
-		if(h->block.size >= naligned) {
-			if (h->block.size == naligned) { /* found perfect block! */
-				prev_h->block.next = h->block.next; /* unlink h */
-			}else { /* bigger. allocate tail */
-				h->block.size -= naligned;
-				h += h->block.size;
-				h->block.size = naligned;
-			}
-			free_list = prev_h;
-			return (void *) (h + 1); /* return start of block */
-		}
-
-		if(h == free_list) { /* wrapped around */
-			h = request_memory(naligned); /* request more heap space */
-			if (h == NULL) return NULL; /* no memory left */
-		}
-		prev_h = h;
-		h = h->block.next;
-	}
+    /*
+     * Check if block size is small enough to be consumed
+     * solely for this allocation according to the set
+     * threshold.
+     */
+    if(h->block.size <= (naligned + THRESH)){
+	    prev_h->block.next = h->block.next; /* unlink h */
+    }else { /* bigger. allocate tail */
+	    h->block.size -= naligned;
+	    h += h->block.size;
+	    h->block.size = naligned;
+    }
+    register_malloced_header(h);
+    free_list = prev_h;
+    return (void *) (h + 1); /* return start of block */
 }
-#endif
 
-#if STRATEGY == BEST_FIT || STRATEGY == WORST_FIT
 void *malloc(size_t nbytes)
 {
 	if(nbytes == 0) return NULL;
 	if(nbytes >= ULONG_MAX - sizeof(header)) return NULL; /* overflow */
 
-	header *h, *prev_h, *best = NULL, *prev_best = NULL;
-	int new_memory = 0;
-	unsigned threshold = sizeof(header);
+	header *h, *prev_h;
 	unsigned naligned = (nbytes+sizeof(header)-1)/sizeof(header) + 1; /* number of aligned units needed for nbytes bytes */
+#if STRATEGY == BEST_FIT || STRATEGY == WORST_FIT
+	header *best = NULL, *prev_best = NULL;
+#endif
 
 	if (free_list == NULL) { /* initialize free_list */
 		free_list = &base;
@@ -222,43 +205,40 @@ void *malloc(size_t nbytes)
 	h = prev_h->block.next;
 	while(1) {
 		if(h->block.size >= naligned) {
-#if STRATEGY == BEST_FIT
+#if STRATEGY == FIRST_FIT
+			return unlink_block(h, prev_h, naligned);
+#elif STRATEGY == BEST_FIT
 			if(best == NULL || h->block.size < best->block.size) {
 				best = h;
 				prev_best = prev_h;
 			}
 			if (best->block.size == naligned) /* perfect match */
 				break;
-#endif
-#if STRATEGY == WORST_FIT
+#elif STRATEGY == WORST_FIT
 			if(best == NULL || h->block.size > best->block.size) {
 				best = h;
 				prev_best = prev_h;
 			}
 #endif
 		}
-		if(h == free_list) { /* wrapped around */
+		/*
+ 		 * Check if we have iterated through the whole list.
+ 		 * We should request new memory if no suitable block
+ 		 * was found.
+ 		 */
+		if(h == free_list) {
+#if STRATEGY == BEST_FIT || STRATEGY == WORST_FIT
 			if (best != NULL) /* block found */
-				break;
+				return unlink_block(best, prev_best, naligned);
+#endif
 			h = request_memory(naligned); /* request more heap space */
 			if (h == NULL) return NULL; /* no memory left */
-			new_memory = 1;
 		}
+
 		prev_h = h;
 		h = h->block.next;
 	}
-	if(best->block.size <= naligned + threshold) { /* found perfect block! */
-		prev_best->block.next = best->block.next; /* unlink best */
-	}else {
-		best->block.size -= naligned;
-		best += best->block.size;
-		best->block.size = naligned;
-	}
-	register_malloced_header(best);
-	free_list = prev_best;
-	return (void *) (best+1); /* return start of block */        
 }
-#endif
 
 
 void free(void *block) 
