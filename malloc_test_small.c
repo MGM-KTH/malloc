@@ -16,7 +16,12 @@ int main(int argc, char * argv[]){
     while(scanf("%u", &memory_size) == 1) {
         /*fprintf(stderr, "block size: %u, pid: %u\n", memory_size, getpid());*/ /* used with MANY_RUNS.sh */
         int i,j;
-#if PAGE
+
+#ifdef RANDOM
+        srand(time(NULL));
+#endif
+
+#if PAGE || RANDOM
         unsigned pagesize = getpagesize();
 #endif
         char *a[SIZE];
@@ -28,6 +33,8 @@ int main(int argc, char * argv[]){
             for (j = 0; j < SIZE; ++j) {
 #if PAGE
                 a[j] = malloc(memory_size*pagesize);           
+#elif RANDOM
+                a[j] = malloc(memory_size*rand()%pagesize);
 #else
                 a[j] = malloc(memory_size);                
 #endif

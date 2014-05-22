@@ -30,6 +30,13 @@ for program in screw_first screw_best screw_worst; do
     done
 done
 
+echo "running random tests"
+for program in *_rand; do
+    for i in {2,4,6,8,10}; do
+        echo `( time ( echo $i | ./$program ) 2>&1 )` | awk '{ print $1, $2, substr($3,4) }' >> data/"$program.dat"
+    done    
+done
+
 make clean
 
 ./gnu_plot.sh
