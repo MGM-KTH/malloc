@@ -27,6 +27,7 @@
 #define THRESH 1
 
 void free_memory(void *block, int flag);
+void reset_free_list(); /* for testing */
 
 #ifdef MMAP
 static void *__endHeap = NULL;
