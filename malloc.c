@@ -17,6 +17,8 @@
 #include <sys/resource.h>
 
 #define MIN_ALLOC 64 /* minimum number of units to request */
+#define POSSIBLY_MALLOCED 0
+#define ONLY_MAPPED 1
 
 #ifdef MMAP
 static void *__endHeap = NULL;
@@ -54,6 +56,7 @@ union header {
 
 typedef union header header; /* skip the union keyword */
 
+static header *malloced_headers  = NULL;
 static header *free_list = NULL;
 static header base; /* empty base header for free_list */
 
@@ -84,12 +87,55 @@ static header *request_memory(unsigned naligned)
 	}
 	up = (header *) cp;
 	up->block.size = naligned;
-	free((void *)(up+1));
+	free_memory((void *)(up+1), ONLY_MAPPED);
 	return free_list;
 }
 
 
 /* malloc implementations: */
+
+
+void register_malloced_header(header *h) {
+	/*fprintf(stderr, "registering 0x%x\n", h);*/
+	if (malloced_headers == NULL) {
+		malloced_headers = h;
+		h->block.next = h;
+	}
+	else {
+		/*unregister_malloced_header(h+1);*/
+		h->block.next = malloced_headers->block.next;
+		malloced_headers->block.next = h;
+		malloced_headers = h;
+	}
+}
+
+int unregister_malloced_header(void *block) {
+	if (malloced_headers == NULL)
+		return 0;
+	header *bh, *h, *prev_h;
+	bh = (header *) block - 1; /* point to block header */
+	/*fprintf(stderr, "trying to unregister 0x%x\n", bh);*/
+	prev_h = malloced_headers;
+	h = prev_h->block.next;
+	while(1) {
+/*		fprintf(stderr, "h = 0x%x\n", h);
+		fprintf(stderr, "h next = 0x%x\n", h->block.next);
+		fprintf(stderr, "prev_h = 0x%x\n", prev_h);*/
+		if(h == bh) {
+			/*fprintf(stderr, "SUCCESS \n");*/
+			prev_h->block.next = h->block.next; /* unlink */
+			malloced_headers = prev_h;
+			if(prev_h == h) malloced_headers = NULL;
+			return 1;
+		}
+		if(h == malloced_headers) {
+			/*fprintf(stderr, "FAIL \n");*/
+			return 0;
+		}
+		prev_h = h;
+		h = h->block.next;
+	}
+}
 
 
 #if STRATEGY == FIRST_FIT
@@ -112,7 +158,8 @@ void *malloc(size_t nbytes)
 	/* loop free_list looking for memory */
 	prev_h = free_list;
 	h = prev_h->block.next;
-	for (h = prev_h->block.next; ; prev_h = h, h = h->block.next) {
+	while(1) {
+	/*for (h = prev_h->block.next; ; prev_h = h, h = h->block.next) {*/
 		if(h->block.size >= naligned) {
 			if (h->block.size == naligned) { /* found perfect block! */
 				prev_h->block.next = h->block.next; /* unlink h */
@@ -129,8 +176,8 @@ void *malloc(size_t nbytes)
 			h = request_memory(naligned); /* request more heap space */
 			if (h == NULL) return NULL; /* no memory left */
 		}
-		/*prev_h = h;
-		h = h->block.next;*/
+		prev_h = h;
+		h = h->block.next;
 	}
 }
 #endif
@@ -138,10 +185,12 @@ void *malloc(size_t nbytes)
 #if STRATEGY == BEST_FIT || STRATEGY == WORST_FIT
 void *malloc(size_t nbytes)
 {
+/*	fprintf(stderr, "MALLOC CALLED\n");*/
 	if(nbytes == 0) return NULL;
 	if(nbytes >= ULONG_MAX - sizeof(header)) return NULL; /* overflow */
 
 	header *h, *prev_h, *best = NULL, *prev_best = NULL;
+	int new_memory = 0;
 	unsigned threshold = sizeof(header);
 	unsigned naligned = (nbytes+sizeof(header)-1)/sizeof(header) + 1; /* number of aligned units needed for nbytes bytes */
 
@@ -155,52 +204,67 @@ void *malloc(size_t nbytes)
 	prev_h = free_list;
 	h = prev_h->block.next;
 	while(1) {
-#if STRATEGY == BEST_FIT
+/*		fprintf(stderr, "free_list = 0x%x\n", free_list);
+		fprintf(stderr, "h = 0x%x\n", h);
+		fprintf(stderr, "prev_h = 0x%x\n", prev_h);*/
 		if(h->block.size >= naligned) {
+#if STRATEGY == BEST_FIT
 			if(best == NULL || h->block.size < best->block.size) {
 				best = h;
 				prev_best = prev_h;
 			}
 			if (best->block.size == naligned) /* perfect match */
 				break;
-		}
 #endif
 #if STRATEGY == WORST_FIT
-		if(h->block.size >= naligned) {
 			if(best == NULL || h->block.size > best->block.size) {
 				best = h;
 				prev_best = prev_h;
 			}
-		}
 #endif
+		}
 		if(h == free_list) { /* wrapped around */
+			/*fprintf(stderr, "WRAPPED AROUND. best = 0x%x\n", best);*/
 			if (best != NULL) /* block found */
 				break;
 			h = request_memory(naligned); /* request more heap space */
 			if (h == NULL) return NULL; /* no memory left */
+			/*fprintf(stderr, "new memory is of size %u\n", h->block.size);*/
+			new_memory = 1;
 		}
 		prev_h = h;
 		h = h->block.next;
-
 	}
 	if(best->block.size <= naligned + threshold) { /* found perfect block! */
+		/*fprintf(stderr, "unlinked best\n");*/
 		prev_best->block.next = best->block.next; /* unlink best */
 	}else {
 		best->block.size -= naligned;
 		best += best->block.size;
 		best->block.size = naligned;
+		/*fprintf(stderr, "tail allocated best\n");*/
 	}
+	register_malloced_header(best);
 	free_list = prev_best;
 	return (void *) (best+1); /* return start of block */        
 }
 #endif
 
 
+void free(void *block) 
+{
+	free_memory(block, POSSIBLY_MALLOCED);
+}
+
 /*
  * Free the memory beginning at address block
  */
-void free(void *block)
+void free_memory(void *block, int flag)
 {
+	if(flag == POSSIBLY_MALLOCED) {
+		if(!unregister_malloced_header(block))
+			return;
+	}
 	header *bh, *h; /* block header and loop variable */
 
 	if(block == NULL) return; /* Nothing to do */
@@ -325,7 +389,7 @@ int main()
 
 	void *p, *memory_start, *memory_end;
 
-	memory_start = endHeap();
+/*	memory_start = endHeap();
 
 	p = malloc(1);
 	p = malloc(1024);
@@ -335,7 +399,7 @@ int main()
 	memory_end = endHeap();
 
 	fprintf(stderr, "Memory used: %u\n", (unsigned)(memory_end - memory_start));
-	fprintf(stderr, "(Should be 8192 with a page size of 4096 if MIN_ALLOC low enough)\n");
+	fprintf(stderr, "(Should be 8192 with a page size of 4096 if MIN_ALLOC low enough)\n");*/
 
 	/* detta skall fungera korrekt */
 	p = malloc(0);
