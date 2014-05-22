@@ -97,10 +97,24 @@ samt i appendix. Körinstruktioner finns i filen README.txt
 % Uppskattning av tidsåtgång och eventuella kommentarer kring laborationen
 \subsection{Verksamhetsberättelse}
 
+Vi började genom att studera implementationen i The C Programming language.
+Den användes som mall och rättesnöre när vi implementerade vår egna.
+Efter att malloc och free implementerats implementerade vi realloc som utnyttjade dom.
+När dessa delar klarade sina tester implementerade vi både Best-fit och Worst-fit
+algoritmerna för malloc.
+Den sista stora additionen till vår implementation var att vi började hålla reda på
+även allokerade areor och inte bara lediga utrymmen.
+Detta för att kunna identifiera felaktiga anrop till free. \\
+
+Resten av tiden har spenderats på att förfina tester och skript för att kunna sammanställa
+grafer och att utvärdera algoritmerna.\\
+
+Tidsåtgång\dots \\
+
 
 \subsection{Synpunkter}
-gprof fungerar inte längre på Mac OS X, och skolans datorer ger en inte tillräckligt med minne för att göra utförliga tester med gprof. Dessutom skulle vi uppskatta om det fanns ett tydligt exempel på gprof-användning då detta
-har en tendens att vara krångligt.\\
+gprof fungerar inte längre på Mac OS X, och skolans datorer ger en inte tillräckligt med minne för att göra utförliga tester med gprof.
+Dessutom skulle vi uppskatta om det fanns ett tydligt exempel på gprof-användning då detta har en tendens att vara krångligt.\\
 
 Det är lite förvirrande att systemets malloc har någon optimering som gör att minnesåtgången blir 0 i alla tester. 
 Detta kanske inte gäller alla system, men det borde kanske nämnas i labbpeket för att göra folk beredda på det.\\
