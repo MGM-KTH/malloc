@@ -3,7 +3,7 @@ SRC = malloc.h malloc.c malloc_test_small.c malloc_test_big.c
 OBJ = malloc.o malloc_test_small.o malloc_test_big.o
 
 LOCALBIN = bestfit_small bestfit_big firstfit_small firstfit_big \
- 	  worstfit_small worstfit_big
+ 	  worstfit_small worstfit_big bestfit_rand worstfit_rand firstfit_rand
 
 SYSBIN = system_malloc_small system_malloc_big
 
@@ -47,11 +47,24 @@ firstfit_big: malloc_test_big.o
 	$(CC) $(CFLAGS) -DSTRATEGY=1 -c malloc.c
 	$(CC) $(CFLAGS) -o $@ malloc_test_big.o malloc.o
 
+firstfit_rand: malloc_test_rand.o
+	$(CC) $(CFLAGS) -DSTRATEGY=1 -c malloc.c
+	$(CC) $(CFLAGS) -o $@ malloc_test_rand.o malloc.o
+bestfit_rand: malloc_test_rand.o
+	$(CC) $(CFLAGS) -DSTRATEGY=2 -c malloc.c
+	$(CC) $(CFLAGS) -o $@ malloc_test_rand.o malloc.o
+worstfit_rand: malloc_test_rand.o
+	$(CC) $(CFLAGS) -DSTRATEGY=3 -c malloc.c
+	$(CC) $(CFLAGS) -o $@ malloc_test_rand.o malloc.o
+
 malloc_test_small.o:
 	$(CC) $(CFLAGS) -c malloc_test_small.c 
 
 malloc_test_big.o:
 	$(CC) $(CFLAGS) -c malloc_test_big.c 
+
+malloc_test_rand.o:
+	$(CC) $(CFLAGS) -c malloc_test_rand.c 
 
 # Compile tests using system malloc implementation
 

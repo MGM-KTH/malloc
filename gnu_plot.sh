@@ -76,3 +76,29 @@ plot 'data/firstfit_big.dat' u 1:3:xtic(1) t 'First fit' w lp ls 1, \
      'data/worstfit_big.dat' u 1:3:xtic(1) t 'Worst fit' w lp ls 4, \
 
 show output
+
+#
+# rand
+#
+
+set ylabel 'memory (KB)'
+set xlabel 'block size * page size'
+set key top left
+set output 'data/memory_plot_rand.png'
+
+# memory plot
+plot 'data/firstfit_rand.dat' u 1:2:xtic(1) t 'First fit' w lp ls 1, \
+     'data/bestfit_rand.dat' u 1:2:xtic(1) t 'Best fit' w lp ls 2, \
+     'data/worstfit_rand.dat' u 1:2:xtic(1) t 'Worst fit' w lp ls 4
+
+show output
+
+set ylabel 'milliseconds'
+set output 'data/time_plot_rand.png'
+
+# time plot
+plot 'data/firstfit_rand.dat' u 1:3:xtic(1) t 'First fit' w lp ls 1, \
+     'data/bestfit_rand.dat' u 1:3:xtic(1) t 'Best fit' w lp ls 2, \
+     'data/worstfit_rand.dat' u 1:3:xtic(1) t 'Worst fit' w lp ls 4, \
+
+show output
