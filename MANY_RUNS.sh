@@ -6,7 +6,7 @@ make
 
 # Set the time format and save the old
 OLD_FORMAT=$TIMEFORMAT
-TIMEFORMAT="%R"
+TIMEFORMAT="%U"
 
 rm data/*.dat
 echo "running small tests"
@@ -18,7 +18,7 @@ done
 
 echo "running big tests"
 for program in *_big; do
-    for i in {2,4,6,8,10}; do
+    for i in {2,4,6,8,10,12,14,16}; do
         echo `( time ( echo $i | ./$program ) 2>&1 )` | awk '{ print $1, $2, substr($3,4) }' >> data/"$program.dat"
     done    
 done
