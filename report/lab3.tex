@@ -170,7 +170,7 @@ Om |MMAP| är definierad deklareras en variabel |__endHeap| samt funktionen
 \section{Resultat}
 
 Testerna gjordes med en page size på 4096 byte.\\
-Tiden för en körning mättes med kommandot |time|, där |user time| användes, vilket mäter antalet sekunder en process
+Tiden för en körning mättes med kommandot |time|, där |user time| användes, vilket mäter tiden då en process
 befann sig i |user mode|.
 
 % UTKAST
@@ -218,21 +218,31 @@ Man ser då en tydlig skillnad mellan de olika algoritmerna, där first-fit klar
 \end{minipage}\\
 
 
+\subsection{Stora allokeringar}
+
+
+\subsection{Skydd av minne}
+
+Vi implementerade skydd mot sönderskrivning av våra kontrollstrukturer. 
+Detta åstadkom vi genom att ha en separat lista som håller reda på minne som |malloc| har allokerat.
+Varje gång |free| anropas kontrolleras dess header genom att loopa över denna lista.
+Om blocket inte finns i listan returneras |NULL|.
+
 % bilder + förklaringar!
 
 % Measurements from "Instruments" time profiler, Mac OS X.
 % Fills an array of size 256, 10 000 times with the specified block size
-\begin{table}[h!] % stay in the fckn results section...
-\begin{tabular}{ c l l l}
-   Block size & First fit & Best fit & System malloc \\
-  \hline \\
-  1 & 57ms & 52ms & 24ms \\
-  2 & 49ms & 39ms & 29ms \\
-  4 & 51ms & 46ms & 30ms \\
-  8 & 58ms & 46ms & 25ms \\
-  16 & 39ms & 36ms & 33ms \\
-\end{tabular}
-\end{table}
+% \begin{table}[h!] 
+% \begin{tabular}{ c l l l}
+%    Block size & First fit & Best fit & System malloc \\
+%   \hline \\
+%   1 & 57ms & 52ms & 24ms \\
+%   2 & 49ms & 39ms & 29ms \\
+%   4 & 51ms & 46ms & 30ms \\
+%   8 & 58ms & 46ms & 25ms \\
+%   16 & 39ms & 36ms & 33ms \\
+% \end{tabular}
+% \end{table}
 
 
 %------------------------------------------------------------------------------
