@@ -26,6 +26,8 @@
  */
 #define THRESH 1
 
+void free_memory(void *block, int flag);
+
 #ifdef MMAP
 static void *__endHeap = NULL;
 
@@ -238,7 +240,10 @@ void *malloc(size_t nbytes)
 		prev_h = h;
 		h = h->block.next;
 	}
+#if STRATEGY == BEST_FIT || STRATEGY == WORST_FIT
 	return unlink_block(best, prev_best, naligned);
+#endif
+	return NULL;
 }
 
 
