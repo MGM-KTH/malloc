@@ -25,6 +25,7 @@
 \usepackage[english]{babel} % English language/hyphenation
 \usepackage{amsmath,amsfonts,amsthm} % Math packages
 
+\usepackage[font=small,labelfont=bf,margin=1cm]{caption}
 \usepackage{verbatim}
 \usepackage[utf8]{inputenc} % Needed to support swedish "åäö" chars
 \usepackage{titling} % Used to re-style maketitle
@@ -35,7 +36,7 @@
 \usepackage{hyperref}
 \usepackage{url}
 \usepackage{graphicx}
-\usepackage[left=3.5cm, right=3.5cm]{geometry} % margins for title page. changed below.
+\usepackage[left=2.5cm, right=2.5cm]{geometry} % margins for title page. changed below.
 
 \usepackage{sectsty} % Allows customizing section commands
 \allsectionsfont{\normalfont} % Make all sections centered, the default font and small caps
@@ -153,6 +154,44 @@ Om |MMAP| är definierad deklareras en variabel |__endHeap| samt funktionen
 
 %------------------------------------------------------------------------------
 \section{Resultat}
+
+Testerna gjordes med en page size på 4096 byte.\\
+Tiden för en körning mättes med kommandot |time|, där |user time| användes, vilket mäter antalet sekunder en process
+befann sig i |user mode|.
+
+% UTKAST
+\subsection{Små allokeringar}
+
+Testerna utfördes genom att upprepade gånger allokera små mängder minnen.
+Ett enskilt test gjordes med en minnesstorlek. Denna minnesstorlek allokerades sedan enligt mönstret nedan:
+
+\begin{verbatim}
+for(i = 0; i < LOOPS; ++i) {
+    for(j = 0; j < SIZE; ++j) {
+        arr[i] = malloc(memory_size);
+    }
+}
+\end{verbatim}
+
+Resultatet av dessa körningar finns i figur 5.1 och 5.2. På x-axeln visas minnesstorleken och på y-axeln visas antalet millisekunder som processen var i user mode.
+
+\begin{minipage}{.5\textwidth}
+    \centering
+    \includegraphics[width=1\textwidth]{images/time_plot_small1.png}
+    \label{fig:p1}
+    \captionof{figure}{\tiny{LOOPS = 20000, SIZE = 128}}
+\end{minipage}%
+\begin{minipage}{.5\textwidth}
+    \centering
+    \includegraphics[width=1\textwidth]{images/time_plot_small2.png}
+    \label{fig:p2}
+    \captionof{figure}{\tiny{LOOPS = 20000, SIZE = 128}}
+\end{minipage}\\\\
+
+Ovanstående körningar hade samma parametrar. Våra algoritmer fick liknande resultat båda gångerna. First fit var något snabbare än best och worst fit. Systemets malloc hade ojämn prestanda vid små allokeringar. 
+% kanske för diskussion..
+Den dåliga körningstiden skulle bland annat kunna förklaras av att allokeringar av så små minnen är väldigt ovanligt. Systemets malloc innehåller dessutom en hel del funktionalitet som kräver initiering och hushållning.
+
 
 % bilder + förklaringar!
 
