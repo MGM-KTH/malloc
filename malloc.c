@@ -166,21 +166,21 @@ int unregister_malloced_header(void *block) {
  */
 void *unlink_block(header *h, header *prev_h, unsigned naligned)
 {
-    /*
-     * Check if block size is small enough to be consumed
-     * solely for this allocation according to the set
-     * threshold.
-     */
-    if(h->block.size <= (naligned + THRESH)){
-	    prev_h->block.next = h->block.next; /* unlink h */
-    }else { /* bigger. allocate tail */
-	    h->block.size -= naligned;
-	    h += h->block.size;
-	    h->block.size = naligned;
-    }
-    register_malloced_header(h);
-    free_list = prev_h;
-    return (void *) (h + 1); /* return start of block */
+	/*
+	 * Check if block size is small enough to be consumed
+	 * solely for this allocation according to the set
+	 * threshold.
+	 */
+	if(h->block.size <= (naligned + THRESH)){
+		prev_h->block.next = h->block.next; /* unlink h */
+	}else { /* bigger. allocate tail */
+		h->block.size -= naligned;
+		h += h->block.size;
+		h->block.size = naligned;
+	}
+	register_malloced_header(h);
+	free_list = prev_h;
+	return (void *) (h + 1); /* return start of block */
 }
 
 void *malloc(size_t nbytes)
@@ -222,10 +222,10 @@ void *malloc(size_t nbytes)
 #endif
 		}
 		/*
- 		 * Check if we have iterated through the whole list.
- 		 * We should request new memory if no suitable block
- 		 * was found.
- 		 */
+		 * Check if we have iterated through the whole list.
+		 * We should request new memory if no suitable block
+		 * was found.
+		 */
 		if(h == free_list) {
 #if STRATEGY == BEST_FIT || STRATEGY == WORST_FIT
 			if (best != NULL) /* block found */
@@ -263,9 +263,9 @@ void free_memory(void *block, int flag)
 	h = free_list;
 
 	/*
- 	 * Find the correct place where the freed
- 	 * header should be inserted.
- 	 */
+	 * Find the correct place where the freed
+	 * header should be inserted.
+	 */
 	while(!(bh > h && bh < h->block.next)) {
 		if(h >= h->block.next && (bh > h || bh < h->block.next))
 			break; /* freed block at start or end of arena */
