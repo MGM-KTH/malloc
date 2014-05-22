@@ -182,7 +182,7 @@ Ett enskilt test gjordes med en minnesstorlek. Denna minnesstorlek allokerades s
 \begin{verbatim}
 for(i = 0; i < LOOPS; ++i) {
     for(j = 0; j < SIZE; ++j) {
-        arr[i] = malloc(memory_size);
+        arr[j] = malloc(memory_size);
     }
 }
 \end{verbatim}
@@ -204,7 +204,18 @@ Resultatet av dessa körningar finns i figur 5.1 och 5.2. På x-axeln visas minn
 
 Ovanstående körningar hade samma parametrar. Våra algoritmer fick liknande resultat båda gångerna. First fit var något snabbare än best och worst fit. Systemets malloc hade ojämn prestanda vid små allokeringar. 
 % kanske för diskussion..
-Den dåliga körningstiden skulle bland annat kunna förklaras av att allokeringar av så små minnen är väldigt ovanligt. Systemets malloc innehåller dessutom en hel del funktionalitet som kräver initiering och hushållning.
+Den dåliga körningstiden skulle bland annat kunna förklaras av att allokeringar av så små minnen är väldigt ovanligt. Systemets malloc innehåller dessutom en hel del funktionalitet som kräver initiering och hushållning.\\
+
+För att vidare simulera vanlig användning körde vi ett test där vi allokerade slumpmässiga minnesstorlekar.
+Storlekarna varierade från blockstorleken till blockstorleken*pagestorleken.
+Man ser då en tydlig skillnad mellan de olika algoritmerna, där first-fit klarar sig bäst vid simulerad s.k. ``vanlig'' användning.
+
+\begin{minipage}{.5\textwidth}
+    \centering
+    \includegraphics[width=1\textwidth]{images/time_plot_rand.png}
+    \label{fig:p3}
+    \captionof{figure}{\tiny{LOOPS = 20, SIZE = 128}}
+\end{minipage}\\
 
 
 % bilder + förklaringar!
