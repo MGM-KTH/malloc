@@ -77,6 +77,24 @@ plot 'data/firstfit_big.dat' u 1:3:xtic(1) t 'First fit' w lp ls 1, \
 
 show output
 
+
+#
+# memory when screwing with first fit
+#
+
+set ylabel 'memory (KB)'
+set xlabel 'some memory'
+set key top left
+set output 'data/screw_plot.png'
+
+plot 'data/screw_first.dat' u 1:2:xtic(1) t 'First fit' w lp ls 1, \
+     'data/screw_best.dat' u 1:2:xtic(1) t 'Best fit' w lp ls 2, \
+     'data/screw_worst.dat' u 1:2:xtic(1) t 'Worst fit' w lp ls 4
+     #'data/system_malloc_big.dat' u (log($1)):2:xtic(1) t 'System' w lp ls 3, \
+
+show output
+
+
 #
 # rand
 #
