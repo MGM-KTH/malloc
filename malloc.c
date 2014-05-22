@@ -60,7 +60,9 @@ static header *malloced_headers  = NULL;
 static header *free_list = NULL;
 static header base; /* empty base header for free_list */
 
-
+/*
+ * Request more memory from the os.
+ */
 static header *request_memory(unsigned naligned)
 {
 	void *cp;
@@ -71,11 +73,19 @@ static header *request_memory(unsigned naligned)
 	if(naligned < MIN_ALLOC) naligned = MIN_ALLOC;
 
 #ifdef MMAP
+	/*
+ 	 * mmap() maps in multiples of pages. Calculate the amount of pages needed.
+ 	 */
 	unsigned noPages;
 	noPages = ((naligned*sizeof(header))-1)/pagesize + 1;
 	if(noPages > 10) noPages *= 16; /* assume more large blocks follow */
+
+	/* Map memory */
 	cp = mmap(__endHeap, noPages*pagesize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+
+	/* Convert newly mapped memory area to size in multiples of header struct */
 	naligned = (noPages*pagesize)/sizeof(header);
+
 	if (cp != MAP_FAILED)
 		__endHeap += noPages*pagesize; /* increase total amount of allocations */
 #else
@@ -85,51 +95,59 @@ static header *request_memory(unsigned naligned)
 		perror("failed to get more memory");
 		return NULL;
 	}
+
+	/*
+ 	 * Create a header at the beginning of the mapped area
+ 	 * and register it in the free list.
+ 	 */
 	up = (header *) cp;
 	up->block.size = naligned;
 	free_memory((void *)(up+1), ONLY_MAPPED);
+
 	return free_list;
 }
 
 
 /* malloc implementations: */
 
-
+/*
+ * Register a header in the list of malloced memory areas
+ */
 void register_malloced_header(header *h) {
-	/*fprintf(stderr, "registering 0x%x\n", h);*/
+	/* init */
 	if (malloced_headers == NULL) {
 		malloced_headers = h;
 		h->block.next = h;
 	}
 	else {
-		/*unregister_malloced_header(h+1);*/
+		/* Insert after at index 1 */
 		h->block.next = malloced_headers->block.next;
 		malloced_headers->block.next = h;
 		malloced_headers = h;
 	}
 }
 
+/*
+ * Remove a header from the list of malloced memory areas
+ */
 int unregister_malloced_header(void *block) {
 	if (malloced_headers == NULL)
 		return 0;
 	header *bh, *h, *prev_h;
 	bh = (header *) block - 1; /* point to block header */
-	/*fprintf(stderr, "trying to unregister 0x%x\n", bh);*/
+
 	prev_h = malloced_headers;
 	h = prev_h->block.next;
+
+	/* Loop through the list until the previous header in the list is found */
 	while(1) {
-/*		fprintf(stderr, "h = 0x%x\n", h);
-		fprintf(stderr, "h next = 0x%x\n", h->block.next);
-		fprintf(stderr, "prev_h = 0x%x\n", prev_h);*/
 		if(h == bh) {
-			/*fprintf(stderr, "SUCCESS \n");*/
 			prev_h->block.next = h->block.next; /* unlink */
 			malloced_headers = prev_h;
 			if(prev_h == h) malloced_headers = NULL;
 			return 1;
 		}
 		if(h == malloced_headers) {
-			/*fprintf(stderr, "FAIL \n");*/
 			return 0;
 		}
 		prev_h = h;
@@ -185,7 +203,6 @@ void *malloc(size_t nbytes)
 #if STRATEGY == BEST_FIT || STRATEGY == WORST_FIT
 void *malloc(size_t nbytes)
 {
-/*	fprintf(stderr, "MALLOC CALLED\n");*/
 	if(nbytes == 0) return NULL;
 	if(nbytes >= ULONG_MAX - sizeof(header)) return NULL; /* overflow */
 
@@ -204,9 +221,6 @@ void *malloc(size_t nbytes)
 	prev_h = free_list;
 	h = prev_h->block.next;
 	while(1) {
-/*		fprintf(stderr, "free_list = 0x%x\n", free_list);
-		fprintf(stderr, "h = 0x%x\n", h);
-		fprintf(stderr, "prev_h = 0x%x\n", prev_h);*/
 		if(h->block.size >= naligned) {
 #if STRATEGY == BEST_FIT
 			if(best == NULL || h->block.size < best->block.size) {
@@ -224,25 +238,21 @@ void *malloc(size_t nbytes)
 #endif
 		}
 		if(h == free_list) { /* wrapped around */
-			/*fprintf(stderr, "WRAPPED AROUND. best = 0x%x\n", best);*/
 			if (best != NULL) /* block found */
 				break;
 			h = request_memory(naligned); /* request more heap space */
 			if (h == NULL) return NULL; /* no memory left */
-			/*fprintf(stderr, "new memory is of size %u\n", h->block.size);*/
 			new_memory = 1;
 		}
 		prev_h = h;
 		h = h->block.next;
 	}
 	if(best->block.size <= naligned + threshold) { /* found perfect block! */
-		/*fprintf(stderr, "unlinked best\n");*/
 		prev_best->block.next = best->block.next; /* unlink best */
 	}else {
 		best->block.size -= naligned;
 		best += best->block.size;
 		best->block.size = naligned;
-		/*fprintf(stderr, "tail allocated best\n");*/
 	}
 	register_malloced_header(best);
 	free_list = prev_best;
@@ -272,7 +282,10 @@ void free_memory(void *block, int flag)
 	bh = (header *) block - 1; /* point to block header */
 	h = free_list;
 
-	/*for(h = free_list; !(bh > h && bh < h->block.next); h = h->block.next) {*/
+	/*
+ 	 * Find the correct place where the freed
+ 	 * header should be inserted.
+ 	 */
 	while(!(bh > h && bh < h->block.next)) {
 		if(h >= h->block.next && (bh > h || bh < h->block.next))
 			break; /* freed block at start or end of arena */
@@ -375,6 +388,11 @@ void reset_free_list()
 #if LOCAL
 int main()
 {
+
+	void *p2 = malloc(100);
+	header *h = (header *) p2 - 1;
+	fprintf(stderr,"allocated size is %u\n", h->block.size*sizeof(header));
+	fprintf(stderr,"free amount is %u\n", free_list->block.next->block.size*sizeof(header));
 
 	/* requesting one page of memory using mmap */
 	void *m = mmap(0, getpagesize(), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
