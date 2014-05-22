@@ -42,7 +42,7 @@ void *endHeap(void)
 
 #if STRATEGY != SYSTEM_MALLOC
 
-typedef double alignment_variable; /* the largest possible alignment size */
+typedef double alignment_variable;
 
 /*
  * |                       |      |                     |
@@ -84,7 +84,7 @@ static header *request_memory(unsigned naligned)
  	 */
 	unsigned noPages;
 	noPages = ((naligned*sizeof(header))-1)/pagesize + 1;
-	if(noPages > 10) noPages *= 16; /* assume more large blocks follow */
+	if(noPages > 10 && noPages < 256) noPages *= 16; /* assume more large blocks follow */
 
 	/* Map memory */
 	cp = mmap(__endHeap, noPages*pagesize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
@@ -145,7 +145,7 @@ int unregister_malloced_header(void *block) {
 	prev_h = malloced_headers;
 	h = prev_h->block.next;
 
-	/* Loop through the list until the previous header in the list is found */
+	/* Loop through the list until bh is found */
 	while(1) {
 		if(h == bh) {
 			prev_h->block.next = h->block.next; /* unlink */
@@ -153,7 +153,7 @@ int unregister_malloced_header(void *block) {
 			if(prev_h == h) malloced_headers = NULL;
 			return 1;
 		}
-		if(h == malloced_headers) {
+		if(h == malloced_headers) { /* wrapped around. block not malloced */
 			return 0;
 		}
 		prev_h = h;
@@ -229,7 +229,7 @@ void *malloc(size_t nbytes)
 		if(h == free_list) {
 #if STRATEGY == BEST_FIT || STRATEGY == WORST_FIT
 			if (best != NULL) /* block found */
-				return unlink_block(best, prev_best, naligned);
+				break;
 #endif
 			h = request_memory(naligned); /* request more heap space */
 			if (h == NULL) return NULL; /* no memory left */
@@ -238,6 +238,7 @@ void *malloc(size_t nbytes)
 		prev_h = h;
 		h = h->block.next;
 	}
+	return unlink_block(best, prev_best, naligned);
 }
 
 
@@ -252,7 +253,7 @@ void free(void *block)
 void free_memory(void *block, int flag)
 {
 	if(flag == POSSIBLY_MALLOCED) {
-		if(!unregister_malloced_header(block))
+		if(!unregister_malloced_header(block)) /* not malloced */
 			return;
 	}
 	header *bh, *h; /* block header and loop variable */
