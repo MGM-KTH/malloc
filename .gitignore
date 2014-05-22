@@ -16,6 +16,9 @@ system_malloc_big
 system_malloc_small
 worstfit_big
 worstfit_small
+screw_best
+screw_worst
+screw_first
 *.dat
 *.png
 t0
