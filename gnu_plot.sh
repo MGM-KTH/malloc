@@ -117,6 +117,7 @@ set output 'data/time_plot_rand.png'
 # time plot
 plot 'data/firstfit_rand.dat' u 1:3:xtic(1) t 'First fit' w lp ls 1, \
      'data/bestfit_rand.dat' u 1:3:xtic(1) t 'Best fit' w lp ls 2, \
+     'data/system_malloc_rand.dat' u 1:3:xtic(1) t 'System' w lp ls 3, \
      'data/worstfit_rand.dat' u 1:3:xtic(1) t 'Worst fit' w lp ls 4, \
 
 show output

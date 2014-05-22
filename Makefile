@@ -5,7 +5,7 @@ OBJ = malloc.o malloc_test_small.o malloc_test_big.o
 LOCALBIN = bestfit_small bestfit_big firstfit_small firstfit_big \
  	  worstfit_small worstfit_big bestfit_rand worstfit_rand firstfit_rand
 
-SYSBIN = system_malloc_small system_malloc_big
+SYSBIN = system_malloc_small system_malloc_big system_malloc_rand
 
 CC = gcc
 CFLAGS	=  -g -w -ansi
@@ -84,11 +84,18 @@ system_malloc_big: sys_malloc_test_big.o
 	$(CC) $(CFLAGS) -DSTRATEGY=0 -c malloc.c
 	$(CC) $(CFLAGS) -o $@ malloc_test_big.o malloc.o
 
+system_malloc_rand: sys_malloc_test_rand.o
+	$(CC) $(CFLAGS) -DSTRATEGY=0 -c malloc.c
+	$(CC) $(CFLAGS) -o $@ malloc_test_big.o malloc.o
+
 sys_malloc_test_small.o:
 	$(CC) $(CFLAGS_SYS) -c malloc_test_small.c 
 
 sys_malloc_test_big.o:
 	$(CC) $(CFLAGS_SYS) -c malloc_test_big.c 
+
+sys_malloc_test_rand.o:
+	$(CC) $(CFLAGS_SYS) -c malloc_test_rand.c 
 
 clean: 
 	rm -f *.o $(LOCALBIN) $(SYSBIN)

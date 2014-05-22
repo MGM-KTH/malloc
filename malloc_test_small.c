@@ -34,7 +34,7 @@ int main(int argc, char * argv[]){
 #if PAGE
                 a[j] = malloc(memory_size*pagesize);           
 #elif RANDOM
-                a[j] = malloc(memory_size*rand()%pagesize);
+                a[j] = malloc(memory_size*(rand()%pagesize));
 #else
                 a[j] = malloc(memory_size);                
 #endif
