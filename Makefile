@@ -20,8 +20,8 @@ local: $(LOCALBIN)
 malloc: malloc.o
 	$(CC) $(CFLAGS) -o $@ malloc.o
 
-malloc.o:
-	$(CC) -g -w -ansi -DLOCAL=1 -DSTRATEGY=2 -c malloc.c
+malloc.o: malloc.c
+	$(CC) $(CFLAGS) -DLOCAL=1 -DSTRATEGY=1 -c malloc.c
 
 worstfit_small: malloc_test_small.o screw_with_first_fit.o
 	$(CC) $(CFLAGS) -DSTRATEGY=3 -c malloc.c
@@ -60,16 +60,16 @@ worstfit_rand: malloc_test_rand.o
 	$(CC) $(CFLAGS) -DSTRATEGY=3 -c malloc.c
 	$(CC) $(CFLAGS) -o $@ malloc_test_rand.o malloc.o
 
-malloc_test_small.o:
+malloc_test_small.o: malloc_test_small.c
 	$(CC) $(CFLAGS) -c malloc_test_small.c 
 
-malloc_test_big.o:
+malloc_test_big.o: malloc_test_big.c
 	$(CC) $(CFLAGS) -c malloc_test_big.c 
 
-screw_with_first_fit.o:
+screw_with_first_fit.o: screw_with_first_fit.c
 	$(CC) $(CFLAGS) -c screw_with_first_fit.c
 
-malloc_test_rand.o:
+malloc_test_rand.o: malloc_test_rand.c
 	$(CC) $(CFLAGS) -c malloc_test_rand.c 
 
 # Compile tests using system malloc implementation
@@ -88,13 +88,13 @@ system_malloc_rand: sys_malloc_test_rand.o
 	$(CC) $(CFLAGS) -DSTRATEGY=0 -c malloc.c
 	$(CC) $(CFLAGS) -o $@ malloc_test_big.o malloc.o
 
-sys_malloc_test_small.o:
+sys_malloc_test_small.o: malloc_test_small.c
 	$(CC) $(CFLAGS_SYS) -c malloc_test_small.c 
 
-sys_malloc_test_big.o:
+sys_malloc_test_big.o: malloc_test_big.c
 	$(CC) $(CFLAGS_SYS) -c malloc_test_big.c 
 
-sys_malloc_test_rand.o:
+sys_malloc_test_rand.o: malloc_test_rand.c
 	$(CC) $(CFLAGS_SYS) -c malloc_test_rand.c 
 
 clean: 
