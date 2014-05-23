@@ -237,16 +237,33 @@ in i |malloced_headers|.
 Om ett tillräckligt stort block inte hittas så anropas funktionen
 |request_memory| som använder |mmap| för att mappa ny minnesarea som sedan
 länkas in i |free_list|.
+
 \subsubsection{Algoritmer}
-Som standard används First-fit, som allokerar första blocket som den hittar
-som är tillräckligt stort.
-Med hjälp av kompileringsflaggor kan |malloc| istället använda sig av Best-fit
-eller Worst-fit.
-Båda dessa algoritmer går igenom hela listan av fria block, men sparar en
-pekare till det bästa respektive värsta blocket med avseende på hur bra det
-passar den begärda storleken.
+Med hjälp av kompileringsflaggor kan malloc använda sig av olika algoritmer
+vid allokeringen av minne:
+
+\begin{enumerate}[1)]
+\item \textbf{First-fit:}
+Allokera första blocket som är tillräckligt stort. Detta är den snabbaste
+algoritmen eftersom första bästa block väljs.
+\item \textbf{Best-fit:}
+Allokera det block som har minsta möjliga storlek ($>=$ begärd storlek). 
+Denna algoritm måste alltid gå igenom hela listan av lediga block.
+\item \textbf{Worst-fit:}
+Som best-fit, fast det största möjliga blocket väljs. Även denna algoritm
+går igenom hela listan av lediga block.
+\end{enumerate}
+
+Best-fit och Worst-fit har pekare till det bästa respektive värsta blocket, 
+med avseende på hur bra det passar den begärda storleken.
 När alla fria block har undersökts används det bästa/värsta blocket som hittats
-för allokeringen.
+för allokeringen.\\
+
+First-fit kan generera stora hål i |free_list|.\\
+Tanken med best-fit är att fylla i hål i |free_list| så bra som möjligt, men
+i praktiken skapar den ofta många små hål. Detta motverkas i worst-fit som istället
+lämnar efter sig så stora hål som möjligt. Detta har dock visat sig vara en
+dålig teknik i praktiken\cite{khernigan_ritchie}.
 
 \subsection{Free}
 |free| tar en adress till början av ett allokerat block och frigör minnet så
