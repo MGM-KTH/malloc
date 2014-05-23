@@ -238,11 +238,24 @@ Därefter loopar den över listan av fria block för att leta reda på rätt pla
 att länka in blocket på med avseende på minnesadress.
 För att effektivisera minnesanvändningen så görs hopslagning av lediga block
 som ligger bredvid varandra i minnet.
-När |free| har hittat var det nya friade blocket ska länkas in så görs en koll om
-blocket framför i listan gränsar till det nya blocket och om blocket
+När |free| har hittat var det nya friade blocket ska länkas in så görs en koll
+om blocket framför i listan gränsar till det nya blocket och om blocket
 efter i listan gränsar till det nya blocket.
 
 \subsection{Realloc}
+|realloc| tar adressen till början av ett redan allokerat minnesområde samt
+en önskad storlek i bytes som området antingen ska krympas till eller utökas
+till.
+Returvärdet är startadressen till det allokerade blocket (som kan ha flyttats).
+Om man ger |NULL| som adress så görs bara ett anrop till |malloc|.
+Om man ger 0 som storlek så görs bara ett anrop till |free|.
+Om den önskade storleken är mindre än den nuvarande storleken minskas blockets
+storlek och en ny header skapas vid den nya slutpunkten, varefter |free| anropas på
+det nya blocket.
+Då den begärda storleken är större än den nuvarande så görs ett anrop till
+|malloc|, varefter minnet i det gamla blocket kopieras till det nya blocket
+med hjälp av |memcpy|.
+Därefter frias det gamla blocket med ett anrop till |free|.
 
 
 %------------------------------------------------------------------------------
