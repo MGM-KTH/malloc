@@ -263,7 +263,7 @@ First-fit kan generera stora hål i |free_list|.\\
 Tanken med best-fit är att fylla i hål i |free_list| så bra som möjligt, men
 i praktiken skapar den ofta många små hål. Detta motverkas i worst-fit som istället
 lämnar efter sig så stora hål som möjligt. Detta har dock visat sig vara en
-dålig teknik i praktiken\cite{khernigan_ritchie}.
+dålig teknik i praktiken\cite{modern_operating}.
 
 \subsection{Free}
 |free| tar en adress till början av ett allokerat block och frigör minnet så
@@ -325,7 +325,7 @@ for(i = 0; i < LOOPS; ++i) {
 }
 \end{verbatim}
 
-Utöver detta anropas |free| på allt allokerat minne i slutet på varje test.
+Utöver detta anropas |free| på allt allokerat minne i slutet på varje test.\\
 
 I graferna nedan visas tiden i millisekunder på y-axeln och storleken på 
 de allokerade blocken på x-axeln. När det allokerade minnet är en multipel
@@ -333,7 +333,9 @@ av pagesize visas denna multipel istället för antal byte.
 
 \captionsetup{labelsep=newline}
 
-\subsection{Stora allokeringar}
+\subsection{Tidmätningar}
+
+\subsubsection{Stora allokeringar}
 
 \begin{minipage}{.3\textwidth}
     \centering
@@ -387,7 +389,7 @@ I ett verkligt system är det väldigt svårt att hålla nere fragmenteringen
 av minnet.
 
 
-\subsection{Små allokeringar}
+\subsubsection{Små allokeringar}
 
 \begin{minipage}{.5\textwidth}
     \centering
@@ -418,30 +420,71 @@ av så små minnen är väldigt ovanligt.
 Systemets malloc innehåller dessutom en hel del funktionalitet som kräver
 initiering och hushållning.\\
 
-
-\subsection{Slumpmässiga allokeringar}
+\subsubsection{Slumpmässiga allokeringar}
 För att vidare simulera vanlig användning körde vi ett test där vi allokerade
 slumpmässiga minnesstorlekar.
 Man ser då en tydlig skillnad mellan de olika algoritmerna, där first-fit
 klarar sig bäst vid simulerad s.k. ``vanlig'' användning.\\
 
-\begin{minipage}{.5\textwidth}
-    \centering
+\centering
+\begin{minipage}{0.7\textwidth}
     \includegraphics[width=1\textwidth]{images/time_plot_rand.png}
-    \label{fig:p3}
-    \captionof{figure}{\tiny{LOOPS = 20, SIZE = 128}}
-\end{minipage}\\
+    \label{fig:p1}
+    \captionof{figure}{\footnotesize{LOOPS = 20, SIZE = 128}}
+\end{minipage}
+\vspace{20pt}
 
+\raggedright
 Grafen visar hur algoritmerna presterar då man ökar storleken för hur stora
 allokeringarna får vara.
 Storleken på en minnesallokering beräknades genom formeln
 |multiple*(rand()%pagesize)|, och varierade alltså från 0 till
-|multiple*pagesize|.
+|multiple*pagesize|.\\
+
+
+\subsection{Minnesåtgång}
+
+\begin{minipage}{0.49\textwidth}
+    \centering
+    \includegraphics[width=1\textwidth]{images/memory_plot_big.png}
+    \label{fig:p2}
+    \captionof{figure}{\footnotesize{LOOPS = 20, SIZE = 128}}
+\end{minipage}
+\begin{minipage}{0.49\textwidth}
+    \centering
+    \includegraphics[width=1\textwidth]{images/memory_plot_rand.png}
+    \label{fig:p3}
+    \captionof{figure}{\footnotesize{LOOPS = 20, SIZE = 128.}}
+\end{minipage}
+
+\vspace{20pt}
+\raggedright
+
+Minnesåtgången för de olika algoritmerna var exakt samma för tester med samma
+blockstorlek eftersom algoritmerna försätts i samma situation vad gäller fragmentering.
+Minnesåtgången vid ett test med stora allokeringar visas i figur 5.7. 
+Eftersom samtliga algoritmer går igenom hela |free_list| utan att hitta allokerbart minne
+vid varje allokering fås samma resultat av samtliga algoritmer.\\
+
+\vspace{10pt}
+Med slumpmässiga blockstorlekar kunde mindre variationer urskiljas.
+Best-fit hade marginellt bättre minnesåtgång, antagligen eftersom den fyller i
+existerande hål så väl som möjligt. Detta kan leda till att mindre minne behöver
+begäras via |mmap|. Att worst-fit är sämst kan förklaras med samma argument.\\
+Resultatet kan ses i figur 5.8.\\
 
 
 \renewcommand{\refname}{\normalfont\selectfont\normalsize Referenser} 
 \newpage
 \begin{thebibliography}{9}
+
+\bibitem{modern_operating}
+Tanenbaum, Andrew S,
+\emph{''Modern Operating Systems''},
+ tredje upplagan,\\ Prentice Hall, 
+ 1992,
+ s. 187.
+
 
 \bibitem{khernigan_ritchie}
 Kernighan, Richie, 
