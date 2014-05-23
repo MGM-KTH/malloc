@@ -237,6 +237,16 @@ in i |malloced_headers|.
 Om ett tillräckligt stort block inte hittas så anropas funktionen
 |request_memory| som använder |mmap| för att mappa ny minnesarea som sedan
 länkas in i |free_list|.
+\subsubsection{Algoritmer}
+Som standard används First-fit, som allokerar första blocket som den hittar
+som är tillräckligt stort.
+Med hjälp av kompileringsflaggor kan |malloc| istället använda sig av Best-fit
+eller Worst-fit.
+Båda dessa algoritmer går igenom hela listan av fria block, men sparar en
+pekare till det bästa respektive värsta blocket med avseende på hur bra det
+passar den begärda storleken.
+När alla fria block har undersökts används det bästa/värsta blocket som hittats
+för allokeringen.
 
 \subsection{Free}
 |free| tar en adress till början av ett allokerat block och frigör minnet så
