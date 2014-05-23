@@ -148,8 +148,7 @@ man får lätt intrycket att man ska ligga $< 1.0$.
 
 \section{Förberedelsefrågor}
 
-\begin{enumerate}[1)]
-\item{mmap:}
+\subsection*{mmap:}
 
 Adress-parametern till |mmap| specificerar en virtuell adress som är ett
 förslag till var |mmap| ska skapa en ny mappning.
@@ -170,7 +169,6 @@ Man måste specificera någon av flaggorna |MAP_SHARED| eller |MAP_PRIVATE|.
 processer som har samma mappning.
 |MAP_PRIVATE| skapar en privat copy-on-write-mappning som inte skriver igenom
 till det mappade området.
-\end{enumerate}
 
 %------------------------------------------------------------------------------
 \section{Problembeskrivning}
