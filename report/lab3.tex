@@ -207,13 +207,34 @@ en header till ett allokerat block genom att loopa igenom listan.
 Listan refereras till genom pekaren |malloced_headers| som pekar på en header
 till ett allokerat block.
 
-\subsection{Hopslagning av lediga block}
+\subsection{Malloc}
+|malloc| tar en önskad storlek i bytes och returnerar adressen till början på
+det nyallokerade minnet.
+Ger man 0 som argument, eller ger ett värde större än maxvärdet för |long|
+returnerar den |NULL|.
+|malloc| letar först efter minne genom att loopa över |free_list| för att se om
+det redan finns en tillräckligt stor mappad minnesarea för allokeringen.
+Om en sådan hittas så länkas headern på blocket ur från |free_list| och länkas
+in i |malloced_headers|.
+Om ett tillräckligt stort block inte hittas så anropas funktionen
+|request_memory| som använder |mmap| för att mappa ny minnesarea som sedan
+länkas in i |free_list|.
+
+\subsection{Free}
+|free| tar en adress till början av ett allokerat block och frigör minnet så
+att det kan allokeras igen.
+Om man ger en adress som är |NULL| eller som inte är början på ett allokerat
+block görs ingenting.
+|free| hämtar först headern till det allokerade blocket.
+Därefter loopar den över listan av fria block för att leta reda på rätt plats
+att länka in blocket på med avseende på minnesadress.
 För att effektivisera minnesanvändningen så görs hopslagning av lediga block
-som ligger bredvid varandra i |free|.
-Varje gång en minnesarea frias så ska den sättas in på rätt plats i |free_list|.
-När platsen hittats så görs en koll om blocket framför i listan gränsar till
-det nya friade blocket och om blocket efter i listan gränsar till det nya
-blocket.
+som ligger bredvid varandra i minnet.
+När |free| har hittat var det nya friade blocket ska länkas in så görs en koll om
+blocket framför i listan gränsar till det nya blocket och om blocket
+efter i listan gränsar till det nya blocket.
+
+\subsection{Realloc}
 
 
 %------------------------------------------------------------------------------
