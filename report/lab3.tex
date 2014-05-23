@@ -22,11 +22,12 @@
 
 \usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
 %\usepackage{fourier} % Use the Adobe Utopia font for the document - comment this line to return to the LaTeX default
-\usepackage[english]{babel} % English language/hyphenation
+\usepackage[swedish]{babel} % English language/hyphenation
 \usepackage{amsmath,amsfonts,amsthm} % Math packages
 
 \usepackage[font=scriptsize,labelfont=bf]{caption}
 \usepackage{verbatim}
+\usepackage{hyperref}
 \usepackage[utf8]{inputenc} % Needed to support swedish "åäö" chars
 \usepackage{titling} % Used to re-style maketitle
 \usepackage{enumerate}
@@ -342,8 +343,6 @@ av minnet.
 
 \subsection{Små allokeringar}
 
-Resultatet av dessa körningar kan ses i figur 5.4 och 5.5.
-
 \begin{minipage}{.5\textwidth}
     \centering
     \includegraphics[width=1\textwidth]{images/time_plot_small1.png}
@@ -357,22 +356,29 @@ Resultatet av dessa körningar kan ses i figur 5.4 och 5.5.
     \captionof{figure}{\tiny{LOOPS = 20000, SIZE = 128}}
 \end{minipage}\\\\
 
-Ovanstående körningar hade samma parametrar.
-Våra algoritmer fick liknande resultat båda gångerna.
-First fit var något snabbare än best och worst fit.
-Systemets malloc hade ojämn prestanda vid små allokeringar. 
-% kanske för diskussion..
+I detta test allokerade vi väldigt små mängder minne väldigt många gånger.
+Vi loopade 20 000 gånger och allokerade minne till en
+array av längd 128 i varje iteration.\\
+Resultaten av två identiska körningar kan ses i figur 5.4 och 5.5.\\
+
+First fit var något snabbare än best och worst fit. Detta beror antagligen på
+att vi under en och samma körning allokerar minnen av samma storlek. Detta 
+innebär att first fit ofta får samma mängd fragmentering som best och worst fit,
+men med färre iterationer i |free_list|.\\
+
+Som man kan se i figurerna hade systemets malloc ojämn prestanda vid små allokeringar.
 Den dåliga körningstiden skulle bland annat kunna förklaras av att allokeringar
 av så små minnen är väldigt ovanligt.
 Systemets malloc innehåller dessutom en hel del funktionalitet som kräver
 initiering och hushållning.\\
 
 
+\subsection{Slumpmässiga allokeringar}
 För att vidare simulera vanlig användning körde vi ett test där vi allokerade
 slumpmässiga minnesstorlekar.
 Storlekarna varierade från blockstorleken till blockstorleken*pagestorleken.
 Man ser då en tydlig skillnad mellan de olika algoritmerna, där first-fit
-klarar sig bäst vid simulerad s.k. ``vanlig'' användning.
+klarar sig bäst vid simulerad s.k. ``vanlig'' användning.\\
 
 \begin{minipage}{.5\textwidth}
     \centering
@@ -392,26 +398,33 @@ Varje gång |free| anropas kontrolleras dess header genom att loopa över denna
 lista.
 Om blocket inte finns i listan returneras |NULL|.
 
-% bilder + förklaringar!
 
-% Measurements from "Instruments" time profiler, Mac OS X.
-% Fills an array of size 256, 10 000 times with the specified block size
-% \begin{table}[h!] 
-% \begin{tabular}{ c l l l}
-%    Block size & First fit & Best fit & System malloc \\
-%   \hline \\
-%   1 & 57ms & 52ms & 24ms \\
-%   2 & 49ms & 39ms & 29ms \\
-%   4 & 51ms & 46ms & 30ms \\
-%   8 & 58ms & 46ms & 25ms \\
-%   16 & 39ms & 36ms & 33ms \\
-% \end{tabular}
-% \end{table}
+\renewcommand{\refname}{\normalfont\selectfont\normalsize Referenser} 
+\newpage
+\begin{thebibliography}{9}
+
+\bibitem{khernigan_ritchie}
+Kernighan, Richie, 
+\emph{''The C Programming Language''},
+ andra upplagan,\\ Prentice Hall, 
+ 1988,
+ s. 185- 189.
+
+\bibitem{malloc}
+malloc(3) - Linux man page -
+\url{http://linux.die.net/man/3/malloc}
+
+\bibitem{mmap}
+mmap(2) - Linux man page -
+\url{http://linux.die.net/man/2/mmap}
+
+\bibitem{sbrk}
+sbrk(2) - Linux man page -
+\url{http://linux.die.net/man/2/sbrk}
 
 
-%------------------------------------------------------------------------------
+\end{thebibliography}
 
-% synd att man inte kan mäta minne i system-malloc.
 
 %------------------------------------------------------------------------------
 \newpage

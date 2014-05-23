@@ -1,8 +1,61 @@
 /*
+ * 
+ * malloc.c 
  *
  *
+ * NAME
+ *     malloc, free, realloc -- Memory allocation
  *
  *
+ * SYNOPSIS
+ *     #include <stdlib.h>
+ *
+ *     void *
+ *     malloc(size_t nbytes);
+ *     
+ *     void 
+ *     free(void *block);
+ * 
+ *     void *
+ *     realloc(void *block, size_t nbytes);    
+ * 
+ *
+ *
+ * DESCRIPTION
+ *     The malloc() function allocates memory. The allocated memory is aligned 
+ *     so that it can be used with any data type. This is done by aligning by
+ *     sizeof(double), the biggest data type. The function allocates nbytes 
+ *     bytes of memory and returns a pointer to the start of the allocated block.
+ * 
+ *     The free() function frees allocated memory. It checks that the memory to
+ *     be freed was allocated using malloc(), otherwise it does nothing.
+ *     When freeing memory the function checks if the memory can be merged into
+ *     neighbouring blocks. 
+ *
+ *     The realloc() function tries to resize allocated memory. If nbytes is 
+ *     smaller than the current size of the block, the tail is freed using free()
+ *	   If nbytes is bigger than the current block, malloc() is used to allocate
+ *     new memory and the block is copied to the newly allocated memory. 
+ *     If block is NULL, malloc() is called with nbytes.
+ *     If nbytes is 0, realloc() calls free() on the specified block.
+ *    
+ * RETURN VALUES
+ *     If successful, malloc() returns a pointer to the allocated memory.
+ *     
+ *     If block is NULL, realloc() returns the return value from malloc().
+ *     If nbytes is 0, NULL is returned after calling free().
+ *     If allocation fails, NULL is returned.
+ *     If a block was successfully moved and resized, realloc() returns the 
+ *     address to the new position of the block.
+ *
+ *     The free() function does not return a value.
+ *
+ * SEE ALSO
+ *     malloc(3), free(3), realloc(3), mmap(2), sbrk(2), brk(2)
+ *
+ * AUTHORS
+ *      Gustaf Lindstedt (glindste@kth.se)
+ *      Martin Runelöv (mrunelov@kth.se)
  */
 
 #define _GNU_SOURCE
@@ -23,9 +76,11 @@
 #include <sys/mman.h>
 #include <sys/resource.h>
 
-#define MIN_ALLOC 64 /* minimum number of units to request */
-#define POSSIBLY_MALLOCED 0
-#define ONLY_MAPPED 1
+#define MIN_ALLOC 64 /* minimum number of pages to request */
+
+/* Flags for different calls to free() */
+#define POSSIBLY_MALLOCED 0 /* check if the memory has been malloced */
+#define ONLY_MAPPED 1 /* skip the malloc-check. used by request_memory */
 
 /*
  * Threshold for how much larger a free block can be and still
