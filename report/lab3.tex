@@ -191,7 +191,21 @@ Om |MMAP| är definierad deklareras en variabel |__endHeap| samt funktionen
 returnerar |__endHeap|.\\
 
 |__endHeap| används som adress-parameter när |malloc| begär mer minne av
-operativsystemet via |request_memory|.
+operativsystemet via |request_memory|.\\
+
+För att hålla reda på lediga block som har mappats men ej allokerats använder
+sig implementationen av en länkad lista med headers till fria block.
+Denna lista refereras till med hjälp av pekaren |free_list| som pekar på en
+header till ett fritt block.
+Varje gång ett block frias så länkas den in i listan på rätt plats med avseende
+på minnesadress.
+För att undvika att en användare kraschar programmet om hen försöker fria en
+minnesadress som inte är början på ett allokerat block använder
+implementationen även en länkad lista mellan allokerade block.
+När |free| anropas så kontrolleras att den givna adressen ligger precis efter
+en header till ett allokerat block genom att loopa igenom listan.
+Listan refereras till genom pekaren |malloced_headers| som pekar på en header
+till ett allokerat block.
 
 \subsection{Hopslagning av lediga block}
 För att effektivisera minnesanvändningen så görs hopslagning av lediga block
