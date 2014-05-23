@@ -395,7 +395,6 @@ initiering och hushållning.\\
 \subsection{Slumpmässiga allokeringar}
 För att vidare simulera vanlig användning körde vi ett test där vi allokerade
 slumpmässiga minnesstorlekar.
-Storlekarna varierade från blockstorleken till blockstorleken*pagestorleken.
 Man ser då en tydlig skillnad mellan de olika algoritmerna, där first-fit
 klarar sig bäst vid simulerad s.k. ``vanlig'' användning.\\
 
@@ -406,6 +405,11 @@ klarar sig bäst vid simulerad s.k. ``vanlig'' användning.\\
     \captionof{figure}{\tiny{LOOPS = 20, SIZE = 128}}
 \end{minipage}\\
 
+Grafen visar hur algoritmerna presterar då man ökar storleken för hur stora
+allokeringarna får vara.
+Storleken på en minnesallokering beräknades genom formeln
+|multiple*(rand()%pagesize)|, och varierade alltså från 0 till
+|multiple*pagesize|.
 
 
 \subsection{Skydd av minne}
