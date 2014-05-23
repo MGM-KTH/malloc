@@ -20,9 +20,9 @@ int main(int argc, char * argv[]){
 #ifdef RANDOM
         srand(time(NULL));
 #endif
-
+        unsigned pagesize = 1;
 #if PAGE || RANDOM
-        unsigned pagesize = getpagesize();
+        pagesize = getpagesize();
 #endif
         char *a[SIZE];
         void *memory_start, *memory_end;
@@ -32,7 +32,7 @@ int main(int argc, char * argv[]){
         for (i = 0; i < TIMES; ++i) {
             for (j = 0; j < SIZE; ++j) {
 #if PAGE
-                a[j] = malloc(memory_size*pagesize);           
+                a[j] = malloc(memory_size*pagesize-16);           
 #elif RANDOM
                 a[j] = malloc(memory_size*(rand()%pagesize));
 #else
@@ -45,7 +45,7 @@ int main(int argc, char * argv[]){
         
         memory_end = endHeap();
 
-        for(j = 0; j < SIZE; j++){
+        for(j = 0; j < SIZE; j++) {
             free(a[j]);
         }
 
