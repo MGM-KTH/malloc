@@ -200,7 +200,16 @@ Om |MMAP| är definierad deklareras en variabel |__endHeap| samt funktionen
 returnerar |__endHeap|.\\
 
 |__endHeap| används som adress-parameter när |malloc| begär mer minne av
-operativsystemet via |request_memory|.\\
+operativsystemet via |request_memory|.
+
+\subsection{Minnesblock}
+I början av varje block ligger alltid en header som innehåller storleken på
+blocket (inklusive headern) i antal headers samt en pekare till nästföljande
+header.
+Block är även alltid alignade till |sizeof(header)| som är storleken av en
+|double| vilket brukar vara den största typen i C.
+
+\subsection{Att hålla reda på minnesblock}
 
 För att hålla reda på lediga block som har mappats men ej allokerats använder
 sig implementationen av en länkad lista med headers till fria block.
