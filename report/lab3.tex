@@ -85,9 +85,17 @@
 \section{Inledning}
 
 % OBS! Se till så att filerna är läsbara för assistenterna (se 3.4 ).
-Koden finns tillgänglig i följande sökväg: |/afs/ict.kth.se/home/m/r/mrunelov/os/lab3/|,
+Koden, inklusive testkod, finns tillgänglig i följande sökväg:\\
+|/afs/ict.kth.se/home/m/r/mrunelov/os/lab3/|. \\
 
-samt i appendix. Körinstruktioner finns i filen README.txt
+I appendix finns källkoden för |malloc.c|, |malloc.h| samt testfilerna |malloc_test_small.c| och |malloc_test_big.c|. \\
+
+Körinstruktioner finns i filen README.md\\
+
+Följande ändringar har gjorts i testfilerna:\\
+-- Shebangen i |RUN_TESTS| har ändrats från |#!/bin/csh| till |#!/bin/bash|.\\
+-- |#include <sys/types.h>| las till i |tstcrash_complex.c| för att kunna
+använda typen |caddr_t|.
 
 
 % Verksamhetsberättelse och synpunkter på laborationen. Beskriv arbetets utveckling. Hade du problem med verktygen,
@@ -402,6 +410,16 @@ Om blocket inte finns i listan returneras |NULL|.
 \newpage
 \subsection*{malloc.h}
 \verbatiminput{../malloc.h}
+
+\newpage
+\subsection*{malloc.h}
+\verbatiminput{../malloc_test_small.c}
+
+\newpage
+\subsection*{malloc.h}
+\verbatiminput{../malloc_test_big.c}
+
+\input{bla}
 
 
 \end{document}

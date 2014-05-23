@@ -4,12 +4,23 @@ malloc
 Testing
 -------
 
+The following changes has been made to the original test files:
+– The shebang in RUN_TESTS has been changed from #!/bin/csh to #!/bin/bash.
+– #include <sys/types.h> was added to tstcrash_complex.c to enable usage of caddr_t.
+
 To run the supplied test files run the script 'test.sh'.
-This script copies the current malloc.c and malloc.h to the testing directory
+It will copy the files malloc.c, malloc.h, and brk.h to the testing directory
 before compiling and running the tests.
 
-To run our tests, run the script 'OUR\_TESTS.sh'.
-Dependencies for this script: gnuplot
+
+To run our tests, run the script 'MANY\_RUNS.sh'.
+It writes the results to .dat files in the directory data/.
+The data is then plotted using gnuplot with the script gnu_plot.sh
+
 
 To run 'main()' in malloc.c, which contains some basic tests,
-run 'make malloc' followed by running the binary 'malloc'
+run the following commands: 
+
+make clean
+make malloc
+./malloc

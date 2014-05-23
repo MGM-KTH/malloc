@@ -4,6 +4,7 @@
 #include <string.h>
 #include "tst.h"
 #include <unistd.h>
+#include <sys/types.h>
 
 char *progname;
 
@@ -18,7 +19,7 @@ void t_stack()
 int main(int argc, char *argv[]){
   
   static char arr[20];
-  void * highbreak, * lowbreak;
+  caddr_t highbreak, lowbreak;
   int add = 0;
   char *p, *q, *r, *t;
   
