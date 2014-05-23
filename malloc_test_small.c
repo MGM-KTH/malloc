@@ -14,7 +14,6 @@
 int main(int argc, char * argv[]){
     unsigned memory_size;
     while(scanf("%u", &memory_size) == 1) {
-        /*fprintf(stderr, "block size: %u, pid: %u\n", memory_size, getpid());*/ /* used with MANY_RUNS.sh */
         int i,j;
 
 #ifdef RANDOM
@@ -50,7 +49,8 @@ int main(int argc, char * argv[]){
         }
 
         /* block size, memory and time */
-        fprintf(stdout,"%u %u\n", memory_size,(unsigned)(memory_end - memory_start)/1000);
+        fprintf(stdout,"%u %u\n", memory_size,
+            (unsigned)(memory_end - memory_start)/1000);
 
 #ifndef SYSTEM
         reset_free_list();
@@ -60,7 +60,8 @@ int main(int argc, char * argv[]){
         /*fprintf(stderr,"%u %d\n", memory_size,msec);*/
 
         /* block size and memory */
-        /*fprintf(stderr,"%u %u\n", memory_size,(unsigned)(endHeap() - memory_start));*/
+        /*fprintf(stderr,"%u %u\n", memory_size,
+            (unsigned)(endHeap() - memory_start));*/
     }
     return 0;
 }
