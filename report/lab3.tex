@@ -25,7 +25,7 @@
 \usepackage[english]{babel} % English language/hyphenation
 \usepackage{amsmath,amsfonts,amsthm} % Math packages
 
-\usepackage[font=small,labelfont=bf,margin=1cm]{caption}
+\usepackage[font=scriptsize,labelfont=bf]{caption}
 \usepackage{verbatim}
 \usepackage[utf8]{inputenc} % Needed to support swedish "åäö" chars
 \usepackage{titling} % Used to re-style maketitle
@@ -99,33 +99,41 @@ samt i appendix. Körinstruktioner finns i filen README.txt
 
 Vi började genom att studera implementationen i The C Programming language.
 Den användes som mall och rättesnöre när vi implementerade vår egna.
-Efter att malloc och free implementerats implementerade vi realloc som utnyttjade dom.
-När dessa delar klarade sina tester implementerade vi både Best-fit och Worst-fit
-algoritmerna för malloc.
-Den sista stora additionen till vår implementation var att vi började hålla reda på
-även allokerade areor och inte bara lediga utrymmen.
+Efter att malloc och free implementerats implementerade vi realloc som
+utnyttjade dom.
+När dessa delar klarade sina tester implementerade vi både Best-fit och
+Worst-fit algoritmerna för malloc.
+Den sista stora additionen till vår implementation var att vi började hålla
+reda på även allokerade areor och inte bara lediga utrymmen.
 Detta för att kunna identifiera felaktiga anrop till free. \\
 
-Resten av tiden har spenderats på att förfina tester och skript för att kunna sammanställa
-grafer och att utvärdera algoritmerna.\\
+Resten av tiden har spenderats på att förfina tester och skript för att kunna
+sammanställa grafer och att utvärdera algoritmerna.\\
 
 Tidsåtgång\dots \\
 
 
 \subsection{Synpunkter}
-gprof fungerar inte längre på Mac OS X, och skolans datorer ger en inte tillräckligt med minne för att göra utförliga tester med gprof.
-Dessutom skulle vi uppskatta om det fanns ett tydligt exempel på gprof-användning då detta har en tendens att vara krångligt.\\
+gprof fungerar inte längre på Mac OS X, och skolans datorer ger en inte
+tillräckligt med minne för att göra utförliga tester med gprof.
+Dessutom skulle vi uppskatta om det fanns ett tydligt exempel på
+gprof-användning då detta har en tendens att vara krångligt.\\
 
-Det är lite förvirrande att systemets malloc har någon optimering som gör att minnesåtgången blir 0 i alla tester. 
-Detta kanske inte gäller alla system, men det borde kanske nämnas i labbpeket för att göra folk beredda på det.\\
+Det är lite förvirrande att systemets malloc har någon optimering som gör att
+minnesåtgången blir 0 i alla tester. 
+Detta kanske inte gäller alla system, men det borde kanske nämnas i labbpeket
+för att göra folk beredda på det.\\
 
-Testfilerna är väldigt otydliga med huruvida man har klarat ett test eller inte. Om man kollar i källkoden kan man
-oftast räkna ut vad som menas, men det borde inte behövas.
-Precis som MERGE-testet borde samtliga tester avslutas med antingen |Test passed OK| eller |Test failed|.
+Testfilerna är väldigt otydliga med huruvida man har klarat ett test eller
+inte. Om man kollar i källkoden kan man oftast räkna ut vad som menas, men det
+borde inte behövas.
+Precis som MERGE-testet borde samtliga tester avslutas med antingen
+|Test passed OK| eller |Test failed|.
 En sådan text per deltest vore ännu bättre. 
 
-Det är också förvirrande med texten |worst case calculation| i MEMORY-testet. Det verkar som att $> 2.0*\text{worst-case}$ 
-anses vara ett misslyckande, men man får lätt intrycket att man ska ligga $< 1.0$.
+Det är också förvirrande med texten |worst case calculation| i MEMORY-testet.
+Det verkar som att $> 2.0*\text{worst-case}$ anses vara ett misslyckande, men
+man får lätt intrycket att man ska ligga $< 1.0$.
 
 
 \section{Förberedelsefrågor}
@@ -133,15 +141,23 @@ anses vara ett misslyckande, men man får lätt intrycket att man ska ligga $< 1
 \begin{enumerate}[1)]
 \item{mmap:}
 
-Adress-parametern till |mmap| specificerar en virtuell adress som är ett förslag till var |mmap| ska skapa en ny mappning.
+Adress-parametern till |mmap| specificerar en virtuell adress som är ett
+förslag till var |mmap| ska skapa en ny mappning.
 |mmap| kommer att skapa en mappning på en närliggande sida.
+Om adressen är |NULL| väljer mmap själv var minnet allokeras.\\
 
-Om adressen är |NULL| väljer kerneln adress.\\
+Om |__endHeap| inte skulle initialiseras till sbrk(0) skulle minnet fortfarande
+allokeras, men alla allokeringar efter den första skulle ge sämre förslag till
+|mmap| eftersom de utgår från minnesadress 0 istället för starten på heapen.\\
 
-|mmap| returnerar en pekare till det mappade området, eller |MAP_FAILED| om mappningen misslyckades.\\
+|mmap| returnerar en pekare till det mappade området, eller |MAP_FAILED| om
+mappningen misslyckades.\\
 
-Man måste specificera någon av flaggorna |MAP_SHARED| eller |MAP_PRIVATE|. |MAP_SHARED| innebär att
-uppdateringar av mappningen är synlig för andra processer som har samma mappning. |MAP_PRIVATE| skapar en privat copy-on-write-mappning.
+Man måste specificera någon av flaggorna |MAP_SHARED| eller |MAP_PRIVATE|.
+|MAP_SHARED| innebär att uppdateringar av mappningen är synlig för andra
+processer som har samma mappning.
+|MAP_PRIVATE| skapar en privat copy-on-write-mappning som inte skriver igenom
+till det mappade området.
 \end{enumerate}
 
 %------------------------------------------------------------------------------
@@ -159,22 +175,32 @@ uppdateringar av mappningen är synlig för andra processer som har samma mappni
 % mängden mappat minne. Den bryr sig inte om luckor osv. Se request_memory.
 %
 Om |MMAP| är definierad deklareras en variabel |__endHeap| samt funktionen 
-|void *endHeap(void)| som initialiserar |__endHeap| om den är |NULL| och returnerar |__endHeap|.\\
+|void *endHeap(void)| som initialiserar |__endHeap| om den är |NULL| och
+returnerar |__endHeap|.\\
 
-|__endHeap| används som adress-parameter när |malloc| begär mer minne av operativsystemet via |request_memory|.
+|__endHeap| används som adress-parameter när |malloc| begär mer minne av
+operativsystemet via |request_memory|.
 
-
+\subsection{Hopslagning av lediga block}
+För att effektivisera minnesanvändningen så görs hopslagning av lediga block
+som ligger bredvid varandra i |free|.
+Varje gång en minnesarea frias så ska den sättas in på rätt plats i |free_list|.
+När platsen hittats så görs en koll om blocket framför i listan gränsar till
+det nya friade blocket och om blocket efter i listan gränsar till det nya
+blocket.
 
 
 %------------------------------------------------------------------------------
-\section{Resultat}
+\section{Utvärdering}
 
 Testerna gjordes med en page size på 4096 byte.\\
-Tiden för en körning mättes med kommandot |time|, där |user time| användes, vilket mäter tiden då en process
-befann sig i |user mode|.\\
+
+Tiden för en körning mättes med kommandot |time|, där |user time| användes,
+vilket mäter tiden då en process befann sig i |user mode|.\\
 
 Testerna utfördes genom att upprepade gånger allokera små mängder minnen.
-Ett enskilt test gjordes med en minnesstorlek. Denna minnesstorlek allokerades sedan enligt mönstret nedan:
+Ett enskilt test gjordes med en minnesstorlek.
+Denna minnesstorlek allokerades sedan enligt mönstret nedan:
 
 \begin{verbatim}
 for(i = 0; i < LOOPS; ++i) {
@@ -184,30 +210,95 @@ for(i = 0; i < LOOPS; ++i) {
 }
 \end{verbatim}
 
+Utöver detta anropas |free| på allt allokerat minne i slutet på varje test.
+
+I graferna nedan visas tiden i millisekunder på y-axeln och storleken på 
+de allokerade blocken på x-axeln. När det allokerade minnet är en multipel
+av pagesize visas denna multipel istället för antal byte.
+
+\captionsetup{labelsep=newline}
+
+\subsection{Stora allokeringar}
+
+\begin{minipage}{.3\textwidth}
+    \centering
+    \includegraphics[width=1\textwidth]{images/time_plot_big1.png}
+    \label{fig:big1}
+    \captionof{figure}{\tiny{LOOPS = 10, SIZE = 128}}
+\end{minipage}%
+\begin{minipage}{.3\textwidth}
+    \centering
+    \includegraphics[width=1\textwidth]{images/time_plot_big2.png}
+    \label{fig:big2}
+    \captionof{figure}{\tiny{LOOPS = 10, SIZE = 128}}
+\end{minipage}
+\begin{minipage}{.3\textwidth}
+    \centering
+    \includegraphics[width=1\textwidth]{images/time_plot_big3.png}
+    \label{fig:big3}
+    \captionof{figure}{\tiny{LOOPS = 10, SIZE = 128}}
+\end{minipage}\\\\
+
+För att testa algoritmernas effektivitet vid större allokeringar har vi utfört
+tester där multipler av page size (4096) allokeras. I figur 5.1 kan man se en
+tidsjämförelse mellan de olika algoritmerna. Anledningen till att first fit är 
+något snabbare än best och worst fit kan förklaras av den overhead som finns i 
+best och worst fit när de loopar igenom |free_list|.
+% KOMMENTERA MER?...lite vag.
+
+Systemets malloc presterar väldigt bra och ligger stabilt på 1 millisekund.
+Våra algoritmer får däremot ett värstafallsscenario. Vi allokerar ett jämnt
+antal pages varje gång, vilket med headern inräknat leder till att vi begär
+lite mer minne än vad som efterfrågas. Detta innebär alltså att små hål
+skapas i minnet och |free_list| fylls med dessa, vilket sänker prestandan
+i samtliga algoritmer.\\
+
+I figur 5.2 visas en version av samma test där |mmap|-anropet har modifierats
+så att det begär mer minne än vad som efterfrågades. Detta betyder att man 
+antar att det kommer att begäras mer minne inom kort. Resultatet av detta kan
+ses i figur 5.2 där denna mekanism börjar användas för page size $>= 50$ .
+Effekten blir en rejäl förändring i hastighet där våra algoritmer närmar sig
+system malloc. De stabiliserar sig på 2 millisekunder. Detta har sin förklaring
+i att den overhead som |mmap|-anrop innebär nästan helt försvinner.
+Våra algoritmer är dock fortfarande dubbelt så långsamma som systemets malloc.\\
+
+I figur 5.3 har vi subtraherat |sizeof(header)| från varje malloc-anrop.
+Det innebär att vi kommer att använda allt minne vi får av |mmap| och undviker
+därmed fragmentering. Detta ger samma resultat som i 5.2.
+
+
 \subsection{Små allokeringar}
 
-Resultatet av dessa körningar finns i figur 5.1 och 5.2. På x-axeln visas minnesstorleken och på y-axeln visas antalet millisekunder som processen var i user mode.
+Resultatet av dessa körningar kan ses i figur 5.4 och 5.5.
 
 \begin{minipage}{.5\textwidth}
     \centering
     \includegraphics[width=1\textwidth]{images/time_plot_small1.png}
-    \label{fig:p1}
+    \label{fig:small1}
     \captionof{figure}{\tiny{LOOPS = 20000, SIZE = 128}}
 \end{minipage}%
 \begin{minipage}{.5\textwidth}
     \centering
     \includegraphics[width=1\textwidth]{images/time_plot_small2.png}
-    \label{fig:p2}
+    \label{fig:small2}
     \captionof{figure}{\tiny{LOOPS = 20000, SIZE = 128}}
 \end{minipage}\\\\
 
-Ovanstående körningar hade samma parametrar. Våra algoritmer fick liknande resultat båda gångerna. First fit var något snabbare än best och worst fit. Systemets malloc hade ojämn prestanda vid små allokeringar. 
+Ovanstående körningar hade samma parametrar.
+Våra algoritmer fick liknande resultat båda gångerna.
+First fit var något snabbare än best och worst fit.
+Systemets malloc hade ojämn prestanda vid små allokeringar. 
 % kanske för diskussion..
-Den dåliga körningstiden skulle bland annat kunna förklaras av att allokeringar av så små minnen är väldigt ovanligt. Systemets malloc innehåller dessutom en hel del funktionalitet som kräver initiering och hushållning.\\
+Den dåliga körningstiden skulle bland annat kunna förklaras av att allokeringar
+av så små minnen är väldigt ovanligt.
+Systemets malloc innehåller dessutom en hel del funktionalitet som kräver
+initiering och hushållning.\\
 
-För att vidare simulera vanlig användning körde vi ett test där vi allokerade slumpmässiga minnesstorlekar.
+För att vidare simulera vanlig användning körde vi ett test där vi allokerade
+slumpmässiga minnesstorlekar.
 Storlekarna varierade från blockstorleken till blockstorleken*pagestorleken.
-Man ser då en tydlig skillnad mellan de olika algoritmerna, där first-fit klarar sig bäst vid simulerad s.k. ``vanlig'' användning.
+Man ser då en tydlig skillnad mellan de olika algoritmerna, där first-fit
+klarar sig bäst vid simulerad s.k. ``vanlig'' användning.
 
 \begin{minipage}{.5\textwidth}
     \centering
@@ -217,14 +308,14 @@ Man ser då en tydlig skillnad mellan de olika algoritmerna, där first-fit klar
 \end{minipage}\\
 
 
-\subsection{Stora allokeringar}
-
 
 \subsection{Skydd av minne}
 
 Vi implementerade skydd mot sönderskrivning av våra kontrollstrukturer. 
-Detta åstadkom vi genom att ha en separat lista som håller reda på minne som |malloc| har allokerat.
-Varje gång |free| anropas kontrolleras dess header genom att loopa över denna lista.
+Detta åstadkom vi genom att ha en separat lista som håller reda på minne som
+|malloc| har allokerat.
+Varje gång |free| anropas kontrolleras dess header genom att loopa över denna
+lista.
 Om blocket inte finns i listan returneras |NULL|.
 
 % bilder + förklaringar!
