@@ -279,16 +279,21 @@ void free_memory(void *block, int flag)
 		h = h->block.next;
 	}
 
-	if(bh + bh->block.size == h->block.next) { /* join to upper nb */
+	/* If h is upper neighbour to bh, join blocks */
+	if(bh + bh->block.size == h->block.next) {
 		bh->block.size += h->block.next->block.size;
 		bh->block.next = h->block.next->block.next;
-	}else
+	}else{
 		bh->block.next = h->block.next;
-	if(h + h->block.size == bh) { /* join to lower nbr */
+	}
+
+	/* If h is lower neighbour to bh, join blocks */
+	if(h + h->block.size == bh) {
 		h->block.size += bh->block.size;
 		h->block.next = bh->block.next;
-	}else
+	}else{
 		h->block.next = bh;
+	}
 	free_list = h;
 }
 
