@@ -282,7 +282,7 @@ i samtliga algoritmer.\\
 I figur 5.2 visas en version av samma test där |mmap|-anropet har modifierats
 så att det begär mer minne än vad som efterfrågades. Detta betyder att man 
 antar att det kommer att begäras mer minne inom kort. Resultatet av detta kan
-ses i figur 5.2 där denna mekanism börjar användas för page size $>= 50$ .
+ses i figur 5.2 där denna mekanism börjar användas för page size $>= 70$ .
 Effekten blir en rejäl förändring i hastighet där våra algoritmer närmar sig
 system malloc. De stabiliserar sig på 2 millisekunder. Detta har sin förklaring
 i att den overhead som |mmap|-anrop innebär nästan helt försvinner.
@@ -291,6 +291,11 @@ Våra algoritmer är dock fortfarande dubbelt så långsamma som systemets mallo
 I figur 5.3 har vi subtraherat |sizeof(header)| från varje malloc-anrop.
 Det innebär att vi kommer att använda allt minne vi får av |mmap| och undviker
 därmed fragmentering. Detta ger samma resultat som i 5.2.
+Detta kan ses som ett bästafall för algoritmerna, där fragmentering motverkats
+genom att specialanpassa storleken på minnet som allokeras. Detta är dock inte
+särskilt realistiskt då storlekarna har skräddarsytts till att vara perfekta.
+I ett verkligt system är det väldigt svårt att hålla nere fragmenteringen
+av minnet.
 
 
 \subsection{Små allokeringar}
@@ -319,6 +324,7 @@ Den dåliga körningstiden skulle bland annat kunna förklaras av att allokering
 av så små minnen är väldigt ovanligt.
 Systemets malloc innehåller dessutom en hel del funktionalitet som kräver
 initiering och hushållning.\\
+
 
 För att vidare simulera vanlig användning körde vi ett test där vi allokerade
 slumpmässiga minnesstorlekar.
