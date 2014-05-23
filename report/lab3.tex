@@ -171,10 +171,7 @@ Om |MMAP| är definierad deklareras en variabel |__endHeap| samt funktionen
 
 Testerna gjordes med en page size på 4096 byte.\\
 Tiden för en körning mättes med kommandot |time|, där |user time| användes, vilket mäter tiden då en process
-befann sig i |user mode|.
-
-% UTKAST
-\subsection{Små allokeringar}
+befann sig i |user mode|.\\
 
 Testerna utfördes genom att upprepade gånger allokera små mängder minnen.
 Ett enskilt test gjordes med en minnesstorlek. Denna minnesstorlek allokerades sedan enligt mönstret nedan:
@@ -186,6 +183,8 @@ for(i = 0; i < LOOPS; ++i) {
     }
 }
 \end{verbatim}
+
+\subsection{Små allokeringar}
 
 Resultatet av dessa körningar finns i figur 5.1 och 5.2. På x-axeln visas minnesstorleken och på y-axeln visas antalet millisekunder som processen var i user mode.
 
