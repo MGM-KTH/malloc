@@ -110,7 +110,8 @@ Detta för att kunna identifiera felaktiga anrop till free. \\
 Resten av tiden har spenderats på att förfina tester och skript för att kunna
 sammanställa grafer och att utvärdera algoritmerna.\\
 
-Tidsåtgång\dots \\
+Vi uppskattar att den totala tidsåtgången för den här laborationen har varit
+ca 20h.\\
 
 
 \subsection{Synpunkter}
@@ -162,6 +163,17 @@ till det mappade området.
 
 %------------------------------------------------------------------------------
 \section{Problembeskrivning}
+Uppgiften gick ut på att skriva egna implementationer av systemfunktionerna
+|malloc|, |free| och |realloc|.
+Funktionen |malloc| allokerar nytt minne för använding av programmet, medan
+|free| friar allokerat minne så att det kan återanvändas.
+Funktionen |realloc| tar allokerat minne och utökar eller minskar det till
+önskad storlek.
+Finns det inte plats för att utöka utrymmet så allokerar |realloc| nytt minne
+och friar det gamla blocket, med kravet att informationen i det gamla blocket
+flyttas till det nya blocket så att data inte förstörs.
+Bland kraven ingick att det inte fick förekomma några minnesläckor.
+
 
 
 %------------------------------------------------------------------------------
