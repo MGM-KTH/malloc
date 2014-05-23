@@ -156,9 +156,11 @@ förslag till var |mmap| ska skapa en ny mappning.
 |mmap| kommer att skapa en mappning på en närliggande sida.
 Om adressen är |NULL| väljer mmap själv var minnet allokeras.\\
 
-Om |__endHeap| inte skulle initialiseras till sbrk(0) skulle minnet fortfarande
+Om |__endHeap| inte skulle initialiseras till |sbrk(0)| skulle minnet fortfarande
 allokeras, men alla allokeringar efter den första skulle ge sämre förslag till
-|mmap| eftersom de utgår från minnesadress 0 istället för starten på heapen.\\
+|mmap| eftersom de utgår från minnesadress 0 istället för starten på heapen.
+Detta problem kan även uppstå med |sbrk(0)| eftersom |mmap| inte garanterar att
+mappningen sker till den specificerade adressen.\\
 
 |mmap| returnerar en pekare till det mappade området, eller |MAP_FAILED| om
 mappningen misslyckades.\\
@@ -199,8 +201,8 @@ Om |MMAP| är definierad deklareras en variabel |__endHeap| samt funktionen
 |void *endHeap(void)| som initialiserar |__endHeap| om den är |NULL| och
 returnerar |__endHeap|.\\
 
-|__endHeap| används som adress-parameter när |malloc| begär mer minne av
-operativsystemet via |request_memory|.
+|__endHeap| används som adress-parameter till |mmap| när |malloc| begär 
+mer minne av operativsystemet via |request_memory|.
 
 \subsection{Minnesblock}
 I början av varje block ligger alltid en header som innehåller storleken på
