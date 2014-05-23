@@ -43,7 +43,7 @@ set output 'data/time_plot_small.png'
 plot 'data/firstfit_small.dat' u (log($1)):3:xtic(1) t 'First fit' w lp ls 1, \
      'data/bestfit_small.dat' u (log($1)):3:xtic(1) t 'Best fit' w lp ls 2, \
      'data/system_malloc_small.dat' u (log($1)):3:xtic(1) t 'System' w lp ls 3, \
-     'data/worstfit_small.dat' u (log($1)):3:xtic(1) t 'Worst fit' w lp ls 4, \
+     'data/worstfit_small.dat' u (log($1)):3:xtic(1) t 'Worst fit' w lp ls 4
 
 show output
 
@@ -54,7 +54,7 @@ show output
 #
 
 set ylabel 'memory (KB)'
-set xlabel 'block size * page size'
+set xlabel 'pages'
 set key top left
 set output 'data/memory_plot_big.png'
 
@@ -73,7 +73,7 @@ set output 'data/time_plot_big.png'
 plot 'data/firstfit_big.dat' u 1:3:xtic(1) t 'First fit' w lp ls 1, \
      'data/bestfit_big.dat' u 1:3:xtic(1) t 'Best fit' w lp ls 2, \
      'data/system_malloc_big.dat' u 1:3:xtic(1) t 'System' w lp ls 3, \
-     'data/worstfit_big.dat' u 1:3:xtic(1) t 'Worst fit' w lp ls 4, \
+     'data/worstfit_big.dat' u 1:3:xtic(1) t 'Worst fit' w lp ls 4
 
 show output
 
@@ -118,6 +118,6 @@ set output 'data/time_plot_rand.png'
 plot 'data/firstfit_rand.dat' u 1:3:xtic(1) t 'First fit' w lp ls 1, \
      'data/bestfit_rand.dat' u 1:3:xtic(1) t 'Best fit' w lp ls 2, \
      'data/system_malloc_rand.dat' u 1:3:xtic(1) t 'System' w lp ls 3, \
-     'data/worstfit_rand.dat' u 1:3:xtic(1) t 'Worst fit' w lp ls 4, \
+     'data/worstfit_rand.dat' u 1:3:xtic(1) t 'Worst fit' w lp ls 4
 
 show output

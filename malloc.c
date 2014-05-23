@@ -87,7 +87,7 @@ static header *request_memory(unsigned naligned)
  	 */
 	unsigned noPages;
 	noPages = ((naligned*sizeof(header))-1)/pagesize + 1;
-	if(noPages > 10 && noPages < 256) noPages *= 16; /* assume more large blocks follow */
+	/*if(noPages > 70 && noPages < 300) noPages *= 32;*/ /* assume more large blocks follow */
 
 	/* Map memory */
 	cp = mmap(__endHeap, noPages*pagesize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);

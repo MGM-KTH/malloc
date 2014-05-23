@@ -18,7 +18,7 @@ done
 
 echo "running big tests"
 for program in *_big; do
-    for i in {2,4,6,8,10,12,14,16}; do
+    for i in {50,60,70,80,90,100}; do
         echo `( time ( echo $i | ./$program ) 2>&1 )` | awk '{ ms = $3*1000; print $1, $2, int(ms+0.5) }' >> data/"$program.dat"
     done    
 done
