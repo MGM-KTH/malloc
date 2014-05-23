@@ -13,6 +13,4 @@ void *malloc(size_t);
 void free(void *);
 void *realloc(void *, size_t);
 
-typedef void * caddr_t;
-
 #endif /* end header guard */
