@@ -32,7 +32,7 @@ int main(int argc, char * argv[]){
         for (i = 0; i < TIMES; ++i) {
             for (j = 0; j < SIZE; ++j) {
 #if PAGE
-                a[j] = malloc(memory_size*pagesize-16);           
+                a[j] = malloc(memory_size*pagesize);           
 #elif RANDOM
                 a[j] = malloc(memory_size*(rand()%pagesize));
 #else
