@@ -277,6 +277,16 @@ Då den begärda storleken är större än den nuvarande så görs ett anrop til
 med hjälp av |memcpy|.
 Därefter frias det gamla blocket med ett anrop till |free|.
 
+\subsection{Skydd av minne} 
+Vi implementerade skydd mot sönderskrivning av våra kontrollstrukturer. 
+Detta åstadkom vi genom att ha en separat lista som håller reda på minne som
+|malloc| har allokerat.
+Varje gång |free| anropas kontrolleras dess header genom att loopa över denna
+lista.
+Om blocket inte finns i listan returneras |NULL|.
+
+
+
 
 %------------------------------------------------------------------------------
 \section{Utvärdering}
@@ -410,16 +420,6 @@ allokeringarna får vara.
 Storleken på en minnesallokering beräknades genom formeln
 |multiple*(rand()%pagesize)|, och varierade alltså från 0 till
 |multiple*pagesize|.
-
-
-\subsection{Skydd av minne}
-
-Vi implementerade skydd mot sönderskrivning av våra kontrollstrukturer. 
-Detta åstadkom vi genom att ha en separat lista som håller reda på minne som
-|malloc| har allokerat.
-Varje gång |free| anropas kontrolleras dess header genom att loopa över denna
-lista.
-Om blocket inte finns i listan returneras |NULL|.
 
 
 \renewcommand{\refname}{\normalfont\selectfont\normalsize Referenser} 
