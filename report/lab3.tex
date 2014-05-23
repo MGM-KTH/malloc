@@ -95,8 +95,11 @@ Körinstruktioner finns i filen README.md\\
 
 Följande ändringar har gjorts i testfilerna:\\
 -- Shebangen i |RUN_TESTS| har ändrats från |#!/bin/csh| till |#!/bin/bash|.\\
--- |#include <sys/types.h>| las till i |tstcrash_complex.c| för att kunna
-använda typen |caddr_t|.
+
+För att fixa strul med |caddr_t| ändrades följande:\\
+-- |#include <sys/types.h>| las till i |tstcrash_complex.c|\\
+-- |#include <sys/types.h>| togs \emph{bort} från |tstcrash_simple.c|\\
+-- |typedef void * caddr_t| las till i |tstcrash_simple.c|
 
 
 % Verksamhetsberättelse och synpunkter på laborationen. Beskriv arbetets utveckling. Hade du problem med verktygen,
