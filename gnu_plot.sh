@@ -100,7 +100,7 @@ show output
 #
 
 set ylabel 'memory (KB)'
-set xlabel 'block size * page size'
+set xlabel 'random size multiple'
 set key top left
 set output 'data/memory_plot_rand.png'
 

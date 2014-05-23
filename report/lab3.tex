@@ -139,9 +139,9 @@ inte. Om man kollar i källkoden kan man oftast räkna ut vad som menas, men det
 borde inte behövas.
 Precis som MERGE-testet borde samtliga tester avslutas med antingen
 |Test passed OK| eller |Test failed|.
-En sådan text per deltest vore ännu bättre. 
+En sådan text per deltest vore ännu bättre.\\
 
-Det är också förvirrande med texten |worst case calculation| i MEMORY-testet.
+Det är även förvirrande med texten |worst case calculation| i MEMORY-testet.
 Det verkar som att $> 2.0*\text{worst-case}$ anses vara ett misslyckande, men
 man får lätt intrycket att man ska ligga $< 1.0$.
 
@@ -294,6 +294,16 @@ Då den begärda storleken är större än den nuvarande så görs ett anrop til
 med hjälp av |memcpy|.
 Därefter frias det gamla blocket med ett anrop till |free|.
 
+\subsection{Skydd av minne} 
+Vi implementerade skydd mot sönderskrivning av våra kontrollstrukturer. 
+Detta åstadkom vi genom att ha en separat lista som håller reda på minne som
+|malloc| har allokerat.
+Varje gång |free| anropas kontrolleras dess header genom att loopa över denna
+lista.
+Om blocket inte finns i listan returneras |NULL|.
+
+
+
 
 %------------------------------------------------------------------------------
 \section{Utvärdering}
@@ -412,7 +422,6 @@ initiering och hushållning.\\
 \subsection{Slumpmässiga allokeringar}
 För att vidare simulera vanlig användning körde vi ett test där vi allokerade
 slumpmässiga minnesstorlekar.
-Storlekarna varierade från blockstorleken till blockstorleken*pagestorleken.
 Man ser då en tydlig skillnad mellan de olika algoritmerna, där first-fit
 klarar sig bäst vid simulerad s.k. ``vanlig'' användning.\\
 
@@ -423,16 +432,11 @@ klarar sig bäst vid simulerad s.k. ``vanlig'' användning.\\
     \captionof{figure}{\tiny{LOOPS = 20, SIZE = 128}}
 \end{minipage}\\
 
-
-
-\subsection{Skydd av minne}
-
-Vi implementerade skydd mot sönderskrivning av våra kontrollstrukturer. 
-Detta åstadkom vi genom att ha en separat lista som håller reda på minne som
-|malloc| har allokerat.
-Varje gång |free| anropas kontrolleras dess header genom att loopa över denna
-lista.
-Om blocket inte finns i listan returneras |NULL|.
+Grafen visar hur algoritmerna presterar då man ökar storleken för hur stora
+allokeringarna får vara.
+Storleken på en minnesallokering beräknades genom formeln
+|multiple*(rand()%pagesize)|, och varierade alltså från 0 till
+|multiple*pagesize|.
 
 
 \renewcommand{\refname}{\normalfont\selectfont\normalsize Referenser} 
