@@ -21,6 +21,8 @@ The data is then plotted using gnuplot with the script gnu_plot.sh
 To run 'main()' in malloc.c, which contains some basic tests,
 run the following commands: 
 
-make clean
-make malloc
-./malloc
+<ul>
+<li>make clean</li>
+<li>make malloc</li>
+<li>./malloc</li>
+</ul>
